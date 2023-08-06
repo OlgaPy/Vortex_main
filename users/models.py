@@ -19,13 +19,15 @@ class UserPublic(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
-    rating = models.IntegerField(default=0)
+    rating = models.FloatField(default=0)
+
 
 class PostStatus(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+
 
 class Post(models.Model):
     user = models.ForeignKey(UserPrivate, on_delete=models.CASCADE, related_name='posts')
@@ -43,6 +45,7 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # Call the real save() method
         self.url = self.get_absolute_url()
+
 
 class Vote(models.Model):
     UPVOTE = 1
@@ -65,3 +68,35 @@ class Vote(models.Model):
         post_author_public = UserPublic.objects.get(user=self.post.user)
         post_author_public.rating += self.value
         post_author_public.save()
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(UserPrivate, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class CommentVote(models.Model):
+    UPVOTE = 1
+    DOWNVOTE = -1
+
+    VOTE_CHOICES = [
+        (UPVOTE, 'Upvote'),
+        (DOWNVOTE, 'Downvote'),
+    ]
+
+    user = models.ForeignKey(UserPrivate, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    value = models.IntegerField(choices=VOTE_CHOICES)
+
+    class Meta:
+        unique_together = ('user', 'comment')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        comment_author_public = UserPublic.objects.get(user=self.comment.user)
+        comment_author_public.rating += self.value / 2.0  # Adding only half of the vote's value
+        comment_author_public.save()
