@@ -6,7 +6,6 @@ from django_extensions.db.fields import AutoSlugField
 
 from common.helpers import slugify_function
 from common.models import Timestamped
-from users.choices import Vote
 from users.managers import KapibaraUserManager
 
 
@@ -27,10 +26,10 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
         "self", related_name="blocking_users", blank=True
     )
     subscribed_tags = models.ManyToManyField(
-        "users.Tag", related_name="subscribed_users", blank=True
+        "posts.Tag", related_name="subscribed_users", blank=True
     )
     excluded_tags = models.ManyToManyField(
-        "users.Tag", related_name="users_with_excluded", blank=True
+        "posts.Tag", related_name="users_with_excluded", blank=True
     )
     joined_communities = models.ManyToManyField(
         "users.Community", related_name="members", blank=True
@@ -55,6 +54,7 @@ class Community(Timestamped):
         editable=True,
         slugify_function=slugify_function,
         allow_duplicates=False,
+        db_index=True,
     )
     description = models.TextField(blank=True)
     owner = models.ForeignKey(
@@ -64,66 +64,6 @@ class Community(Timestamped):
         related_name="owned_communities",
     )
     status = models.CharField(max_length=1, choices=Status.choices, default=Status.OPEN)
-
-
-class Post(Timestamped):
-    class Status(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        PUBLISHED = "published", "Published"
-        DELETED = "deleted", "Deleted"
-
-    user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="posts"
-    )
-    community = models.ForeignKey(
-        "users.Community",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="posts",
-    )
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    image = models.ImageField(upload_to="posts/images/", null=True, blank=True)
-    video = models.FileField(upload_to="posts/videos/", null=True, blank=True)
-    status = models.CharField(
-        max_length=9, choices=Status.choices, default=Status.DRAFT
-    )
-    tags = models.ManyToManyField("users.Tag", related_name="posts", blank=True)
-
-
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
-class PostVote(Timestamped):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    value = models.SmallIntegerField(choices=Vote.choices)
-
-    class Meta:
-        unique_together = ("user", "post")
-
-
-class Comment(Timestamped):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-    parent_comment = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="replies", null=True, blank=True
-    )
-    content = models.TextField()
-
-
-class CommentVote(Timestamped):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    value = models.IntegerField(choices=Vote.choices)
-
-    class Meta:
-        unique_together = ("user", "comment")
 
 
 class UserNote(Timestamped):

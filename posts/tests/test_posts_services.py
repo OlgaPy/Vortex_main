@@ -1,12 +1,12 @@
 import pytest
 
-from users.choices import Vote
-from users.models import PostVote, CommentVote
-from users.services import (
+from posts.choices import Vote
+from posts.models import PostVote
+from posts.services import (
     update_author_rating_on_post_vote,
     update_author_rating_on_comment_vote,
 )
-from users.tests.factories import PostVoteFactory, CommentVoteFactory
+from posts.tests.factories import PostVoteFactory, CommentVoteFactory
 
 
 @pytest.mark.django_db
