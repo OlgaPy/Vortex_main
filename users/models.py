@@ -1,11 +1,9 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django_extensions.db.fields import AutoSlugField
 
-from common.helpers import slugify_function
 from common.models import Timestamped
+from users.choices import TagStatus, UserCommunityStatus, UserRelationStatus
 from users.managers import KapibaraUserManager
 
 
@@ -15,27 +13,17 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
     bio = models.TextField(blank=True)
     rating = models.FloatField(default=0)
-    followers = models.ManyToManyField(
-        "self", related_name="following", symmetrical=False
-    )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    communities = models.ManyToManyField("users.Community", related_name="users")
-    followed_users = models.ManyToManyField("self", blank=True)
-    blocked_users = models.ManyToManyField(
-        "self", related_name="blocking_users", blank=True
+    communities = models.ManyToManyField(
+        "users.Community", related_name="users", blank=True
     )
-    subscribed_tags = models.ManyToManyField(
-        "posts.Tag", related_name="subscribed_users", blank=True
+    user_relation = models.ManyToManyField(
+        to="self", through="users.UserRelation", blank=True
     )
-    excluded_tags = models.ManyToManyField(
-        "posts.Tag", related_name="users_with_excluded", blank=True
-    )
-    joined_communities = models.ManyToManyField(
-        "users.Community", related_name="members", blank=True
-    )
-    subscribed_communities = models.ManyToManyField(
-        "users.Community", related_name="subscribers", blank=True
+    tags = models.ManyToManyField(to="posts.Tag", through="users.UserTag", blank=True)
+    communities = models.ManyToManyField(
+        "communities.Community", through="users.UserCommunity", blank=True
     )
 
     objects = KapibaraUserManager()
@@ -43,27 +31,27 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "external_user_uid"
 
 
-class Community(Timestamped):
-    class Status(models.TextChoices):
-        OPEN = "O", "Open"
-        CLOSED = "C", "Closed"
+class UserTag(Timestamped):
+    tag = models.ForeignKey("posts.Tag", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
+    status = models.CharField(choices=TagStatus.choices, default=TagStatus.SUBSCRIBED)
 
-    name = models.CharField(max_length=100, unique=True)
-    slug = AutoSlugField(
-        populate_from=["name"],
-        editable=True,
-        slugify_function=slugify_function,
-        allow_duplicates=False,
-        db_index=True,
+
+class UserCommunity(Timestamped):
+    community = models.ForeignKey("communities.Community", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
+    status = models.CharField(
+        choices=UserCommunityStatus.choices, default=UserCommunityStatus.SUBSCRIBED
     )
-    description = models.TextField(blank=True)
-    owner = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="owned_communities",
+
+
+class UserRelation(Timestamped):
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
+    related_user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
+    status = models.CharField(
+        choices=UserRelationStatus.choices, default=UserRelationStatus.SUBSCRIBED
     )
-    status = models.CharField(max_length=1, choices=Status.choices, default=Status.OPEN)
+    active_until = models.DateField(blank=True, null=True)
 
 
 class UserNote(Timestamped):
