@@ -34,9 +34,14 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "django_extensions",
     "django_filters",
+    "drf_spectacular",
 ]
 
-KAPIBARA_APPS = ["users", "posts"]
+KAPIBARA_APPS = [
+    "users",
+    "posts",
+    "communities",
+]
 
 INSTALLED_APPS = [
     *DJANGO_APPS,
@@ -113,5 +118,13 @@ AUTH_USER_MODEL = "users.UserPublic"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kapibara API",
+    "DESCRIPTION": "API for Kapibara",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }

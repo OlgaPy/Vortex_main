@@ -30,7 +30,7 @@ class Post(Timestamped):
         "posts.PostGroup", on_delete=models.SET_NULL, null=True, blank=True
     )
     community = models.ForeignKey(
-        "users.Community",
+        "communities.Community",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

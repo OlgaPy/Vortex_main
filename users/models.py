@@ -46,8 +46,12 @@ class UserCommunity(Timestamped):
 
 
 class UserRelation(Timestamped):
-    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
-    related_user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        "users.UserPublic", on_delete=models.CASCADE, related_name="+"
+    )
+    related_user = models.ForeignKey(
+        "users.UserPublic", on_delete=models.CASCADE, related_name="+"
+    )
     status = models.CharField(
         choices=UserRelationStatus.choices, default=UserRelationStatus.SUBSCRIBED
     )
