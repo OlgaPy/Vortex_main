@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import UniqueConstraint
 from django_extensions.db.fields import AutoSlugField
 
 from common.helpers import slugify_function
@@ -57,15 +58,16 @@ class Post(Timestamped):
     content = models.JSONField()
     image = models.ImageField(upload_to="posts/images/", null=True, blank=True)
     video = models.FileField(upload_to="posts/videos/", null=True, blank=True)
-    status = models.CharField(
-        max_length=9, choices=PostStatus.choices, default=PostStatus.DRAFT
-    )
     tags = models.ManyToManyField("posts.Tag", blank=True)
     views_count = models.IntegerField(default=0)
-    comments_count = models.IntegerField(default=0)
-    votes_up_count = models.IntegerField(default=0)
-    votes_down_count = models.IntegerField(default=0)
+    comments_count = models.PositiveIntegerField(default=0)
+    votes_up_count = models.PositiveIntegerField(default=0)
+    votes_down_count = models.PositiveIntegerField(default=0)
     rating = models.IntegerField(default=0)
+    status = models.CharField(
+        max_length=9, choices=PostStatus.choices, default=PostStatus.PUBLISHED
+    )
+    publish_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         default_related_name = "posts"
@@ -87,7 +89,9 @@ class PostVote(Timestamped):
     value = models.SmallIntegerField(choices=Vote.choices)
 
     class Meta:
-        unique_together = ("user", "post")
+        constraints = [
+            UniqueConstraint(fields=("user", "post"), name="user_post_vote"),
+        ]
 
 
 class Comment(Timestamped):

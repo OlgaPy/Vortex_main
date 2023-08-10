@@ -9,6 +9,7 @@ from communities.choices import CommunityStatus
 
 class Community(Timestamped):
     name = models.CharField(max_length=100, unique=True)
+    avatar = models.ImageField(upload_to="community/images/", null=True, blank=True)
     slug = AutoSlugField(
         populate_from=["name"],
         editable=True,

@@ -1,3 +1,5 @@
+import datetime
+
 import environ
 from pathlib import Path
 
@@ -128,3 +130,16 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(
+        minutes=env.int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 5)
+    ),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(
+        days=env.int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1)
+    ),
+    "SIGNING_KEY": env.str("JWT_SIGNING_KEY", SECRET_KEY),
+    "USER_ID_FIELD": "external_user_uid",
+}
+
+COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
