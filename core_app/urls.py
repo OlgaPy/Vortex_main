@@ -19,16 +19,18 @@ v1_urls = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "schema/swagger-ui/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
+        SpectacularSwaggerView.as_view(url_name="v1-api:schema"),
         name="swagger-ui",
     ),
     path(
-        "schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
+        "schema/redoc/",
+        SpectacularRedocView.as_view(url_name="v1-api:schema"),
+        name="redoc",
     ),
-    path("posts/", include("posts.api.urls", namespace="api.posts")),
+    path("", include("posts.api.urls", namespace="posts")),
 ]
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include(v1_urls)),
+    path("api/v1/", include((v1_urls, "v1"), namespace="v1-api")),
 ]

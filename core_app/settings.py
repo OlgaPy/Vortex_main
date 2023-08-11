@@ -1,7 +1,7 @@
 import datetime
+from pathlib import Path
 
 import environ
-from pathlib import Path
 
 env = environ.Env()
 
@@ -61,6 +61,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+if env.bool("ENABLE_DB_STATS", default=False):
+    MIDDLEWARE += ["common.middlewares.DBStatsMiddleware"]
+
 ROOT_URLCONF = "core_app.urls"
 
 TEMPLATES = [
@@ -116,6 +119,27 @@ STATIC_ROOT = BASE_DIR / "static"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.UserPublic"
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG" if env.bool("DEBUG") else "INFO",
+    },
+    "loggers": {
+        "django.db": {
+            "handlers": ["console"],
+            "level": "DEBUG" if env.bool("DEBUG") else "INFO",
+            "propagate": False,
+        },
+    },
+}
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -127,7 +151,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Kapibara API",
     "DESCRIPTION": "API for Kapibara",
-    "VERSION": "1.0.0",
+    "VERSION": "0.0.1-alpha",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

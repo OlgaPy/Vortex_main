@@ -65,7 +65,7 @@ class Post(Timestamped):
     votes_down_count = models.PositiveIntegerField(default=0)
     rating = models.IntegerField(default=0)
     status = models.CharField(
-        max_length=9, choices=PostStatus.choices, default=PostStatus.PUBLISHED
+        max_length=9, choices=PostStatus.choices, default=PostStatus.DRAFT
     )
     publish_at = models.DateTimeField(null=True, blank=True)
 

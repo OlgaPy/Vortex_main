@@ -22,6 +22,7 @@ class PostSerializer(serializers.ModelSerializer):
             "votes_up_count",
             "votes_down_count",
             "rating",
+            "status",
             "created_at",
         )
 
@@ -48,9 +49,12 @@ class PostCreateSerializer(serializers.ModelSerializer):
         fields = (
             "user",
             "title",
+            "slug",
             "content",
             "tags",
+            "status",
         )
+        read_only_fields = ["slug", "status"]
 
 
 class PostVoteCreateSerializer(serializers.ModelSerializer):

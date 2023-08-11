@@ -3,15 +3,13 @@ import operator
 from django.db import transaction
 from django.db.models import F
 
-from posts.choices import Vote
-from posts.exceptions import PostVoteException
+from posts.choices import Vote, PostStatus
+from posts.exceptions import PostVoteException, PostPublishException, PostDeleteException
 from posts.models import PostVote, Post
 from users.models import UserPublic
 
 
-def update_author_rating_on_post_vote(
-    post_vote: PostVote, vote_cancelled: bool = False
-):
+def update_author_rating_on_post_vote(post_vote: PostVote, vote_cancelled: bool = False):
     operation = {
         True: operator.sub,
         False: operator.add,
@@ -38,11 +36,11 @@ def update_post_rating_on_vote(post_vote: PostVote, vote_cancelled: bool = False
 
 
 @transaction.atomic
-def record_vote_for_post(post: Post, user: UserPublic, vote: Vote):
-    if post.user_id == user.id:
+def record_vote_for_post(post: Post, actor: UserPublic, vote: Vote):
+    if post.user_id == actor.id:
         raise PostVoteException("Не надо голосовать за свой же пост.")
 
-    post_vote = PostVote.objects.filter(post=post, user=user).first()
+    post_vote = PostVote.objects.filter(post=post, user=actor).first()
     vote_cancelled = False
     if post_vote:
         if post_vote.value == vote:
@@ -52,7 +50,32 @@ def record_vote_for_post(post: Post, user: UserPublic, vote: Vote):
         vote_cancelled = True
         post_vote.delete()
     else:
-        post_vote = PostVote.objects.create(post=post, user=user, value=vote)
+        post_vote = PostVote.objects.create(post=post, user=actor, value=vote)
 
     update_post_rating_on_vote(post_vote, vote_cancelled)
     update_author_rating_on_post_vote(post_vote, vote_cancelled)
+
+
+def publish_post(post: Post, actor: UserPublic) -> Post:
+    if post.user != actor:
+        raise PostPublishException("Нельзя публиковать чужой пост!")
+
+    if post.status == PostStatus.DELETED:
+        raise PostPublishException("Нельзя публиковать удаленный пост!")
+
+    if post.status == PostStatus.DRAFT:
+        post.status = PostStatus.PUBLISHED
+        post.save()
+
+    return post
+
+
+def delete_post(post: Post, actor: UserPublic):
+    if post.user != actor:
+        raise PostDeleteException("Нельзя удалять чужие посты!")
+
+    if post.status == PostStatus.DELETED:
+        return
+
+    post.status = PostStatus.DELETED
+    post.save()

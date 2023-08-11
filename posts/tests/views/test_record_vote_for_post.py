@@ -103,6 +103,6 @@ class TestRecordVoteForPost:
 
     def _vote_for_post(self, client, post, vote_value):
         return client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
+            reverse("v1-api:posts:posts-vote", kwargs={"slug": post.slug}),
             data={"value": vote_value},
         )
