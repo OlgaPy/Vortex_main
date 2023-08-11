@@ -12,10 +12,18 @@ def api_client():
 
 @pytest.fixture()
 def authed_api_client(api_client):
-    def _api_client_authenticator(user):
+    def api_client_user_auth(user):
         api_client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}"
         )
         return api_client
 
-    return _api_client_authenticator
+    return api_client_user_auth
+
+
+@pytest.fixture()
+def anon_api_client(api_client):
+    def api_client_no_auth():
+        return api_client
+
+    return api_client_no_auth

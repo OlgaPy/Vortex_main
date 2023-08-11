@@ -91,6 +91,16 @@ class TestRecordVoteForPost:
         self.post.user.refresh_from_db()
         assert self.post.user.rating == self.author_original_rating
 
+    def test_cant_vote_as_anonymous(self, anon_api_client):
+        result = self._vote_for_post(anon_api_client(), self.post, Vote.UPVOTE)
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_cant_vote_non_active(self, authed_api_client):
+        voter = UserPublicFactory(is_active=False)
+        client = authed_api_client(voter)
+        result = self._vote_for_post(client, self.post, Vote.UPVOTE)
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
+
     def _vote_for_post(self, client, post, vote_value):
         return client.post(
             reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
