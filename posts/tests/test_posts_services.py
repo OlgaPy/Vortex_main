@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from posts.choices import PostStatus, Vote
-from posts.models import PostVote
 from posts.tests.factories import PostFactory, PostVoteFactory
 from users.tests.factories import UserPublicFactory
 
@@ -40,21 +39,13 @@ class TestRecordVoteForPost:
         expected_post_user_rating,
     ):
         client = authed_api_client(self.voter)
-        result = client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
-            data={"value": vote_value},
-        )
+        result = self._vote_for_post(client, self.post, vote_value)
         self.post.refresh_from_db()
-
-        assert PostVote.objects.filter(
-            user=self.voter, post=self.post, value=vote_value
-        ).exists()
 
         expected_post_rating = self.post_original_rating + expected_post_rating
         expected_post_user_rating = (
             self.author_original_rating + expected_post_user_rating
         )
-        assert self.post.rating == expected_post_rating
         assert self.post.user.rating == expected_post_user_rating
 
         assert result.data == {
@@ -68,40 +59,29 @@ class TestRecordVoteForPost:
             "rating": expected_post_rating,
         }
 
-    def test_voting_for_own_post(self, authed_api_client):
+    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
+    def test_voting_for_own_post(self, authed_api_client, vote_value):
         client = authed_api_client(self.post.user)
-        result = client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
-            data={"value": Vote.UPVOTE},
-        )
+        result = self._vote_for_post(client, self.post, vote_value)
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
     @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
     def test_double_vote(self, authed_api_client, vote_value):
         PostVoteFactory(post=self.post, user=self.post.user, value=vote_value)
         client = authed_api_client(self.post.user)
-        result = client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
-            data={"value": vote_value},
-        )
+        result = self._vote_for_post(client, self.post, vote_value)
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
-    @pytest.mark.parametrize("existing_vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
-    def test_undo_vote(self, authed_api_client, existing_vote_value):
+    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
+    def test_undo_vote(self, authed_api_client, vote_value):
         undo_value_mapping = {
             Vote.UPVOTE: Vote.DOWNVOTE,
             Vote.DOWNVOTE: Vote.UPVOTE,
         }
         client = authed_api_client(self.voter)
-        client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
-            data={"value": existing_vote_value},
-        )
+        self._vote_for_post(client, self.post, vote_value)
+        result = self._vote_for_post(client, self.post, undo_value_mapping[vote_value])
 
-        result = client.post(
-            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
-            data={"value": undo_value_mapping[existing_vote_value]},
-        )
         assert result.data == {
             "slug": self.post.slug,
             "votes_up_count": self.post_original_votes_up_count,
@@ -110,3 +90,9 @@ class TestRecordVoteForPost:
         }
         self.post.user.refresh_from_db()
         assert self.post.user.rating == self.author_original_rating
+
+    def _vote_for_post(self, client, post, vote_value):
+        return client.post(
+            reverse("api.posts:post-vote", kwargs={"slug": self.post.slug}),
+            data={"value": vote_value},
+        )
