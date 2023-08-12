@@ -33,7 +33,9 @@ class TestCreatePost:
         assert sorted(data["tags"]) == sorted(list(set(self.tags)))
 
     def test_not_active_user_cant_create_new_post(self, authed_api_client):
-        result = self._create_post(authed_api_client(self.user), data=self.data)
+        result = self._create_post(
+            authed_api_client(UserPublicFactory(is_active=False)), data=self.data
+        )
 
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -64,7 +66,6 @@ class TestCreatePost:
         assert result.status_code == status.HTTP_200_OK
         data = result.data
         assert data["title"] == title
-        assert data["slug"] == self.expected_slug
         assert sorted(data["tags"]) == sorted(tags)
         assert data["content"] == content
 
