@@ -18,7 +18,7 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(blank=True)
     rating = models.FloatField(default=0)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     user_relation = models.ManyToManyField(
         to="self", through="users.UserRelation", blank=True
     )
