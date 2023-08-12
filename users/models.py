@@ -9,6 +9,8 @@ from users.managers import KapibaraUserManager
 
 
 class UserPublic(AbstractBaseUser, PermissionsMixin):
+    """Information about user."""
+
     external_user_uid = models.CharField(max_length=32, unique=True, db_index=True)
     username = models.CharField(max_length=100, unique=True, db_index=True)
     date_of_birth = models.DateField(null=True, blank=True)
@@ -29,14 +31,21 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "username"
 
+    def __str__(self):
+        return f"<{self.pk}: {self.external_user_uid} / {self.username}>"
+
 
 class UserTag(Timestamped):
+    """List of tags which user either subscribed or ignored."""
+
     tag = models.ForeignKey("posts.Tag", on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     status = models.CharField(choices=TagStatus.choices, default=TagStatus.SUBSCRIBED)
 
 
 class UserCommunity(Timestamped):
+    """Communities user subscribed to or joined."""
+
     community = models.ForeignKey("communities.Community", on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     status = models.CharField(
@@ -45,9 +54,9 @@ class UserCommunity(Timestamped):
 
 
 class UserRelation(Timestamped):
-    user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="+"
-    )
+    """Model to keep user relations, including subscriptions and ignored."""
+
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="+")
     related_user = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="+"
     )
@@ -58,6 +67,8 @@ class UserRelation(Timestamped):
 
 
 class UserNote(Timestamped):
+    """Model to keep user notes about particular user."""
+
     author = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="written_notes"
     )

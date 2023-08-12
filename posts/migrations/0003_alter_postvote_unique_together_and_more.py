@@ -4,18 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('posts', '0002_initial'),
+        ("posts", "0002_initial"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='postvote',
+            name="postvote",
             unique_together=set(),
         ),
         migrations.AddConstraint(
-            model_name='postvote',
-            constraint=models.UniqueConstraint(fields=('user', 'post'), name='user_post_vote'),
+            model_name="postvote",
+            constraint=models.UniqueConstraint(
+                fields=("user", "post"), name="user_post_vote"
+            ),
         ),
     ]

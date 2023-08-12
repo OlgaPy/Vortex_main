@@ -5,6 +5,8 @@ from posts.models import Post, PostVote, Tag
 
 
 class PostSerializer(serializers.ModelSerializer):
+    """Serializer to represent Post instance."""
+
     tags = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     class Meta:
@@ -28,6 +30,8 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PostRatingOnlySerializer(serializers.ModelSerializer):
+    """Serializer to return only rating related data."""
+
     class Meta:
         model = Post
         fields = (
@@ -39,6 +43,8 @@ class PostRatingOnlySerializer(serializers.ModelSerializer):
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
+    """serializer to accept and validate data submitted as a post vote."""
+
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     tags = WritableSlugRelatedField(
         slug_field="name", queryset=Tag.objects.all(), many=True, required=False
@@ -58,6 +64,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class PostVoteCreateSerializer(serializers.ModelSerializer):
+    """Serializer validating data submitted to cast a vote on a post."""
+
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:

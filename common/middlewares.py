@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class DBStatsMiddleware:
     """Middleware class to add number of SQL queries to headers."""
 
-    def __init__(self, get_response):
+    def __init__(self, get_response):  # noqa: D107
         self.get_response = get_response
 
     def __call__(self, request):

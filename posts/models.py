@@ -9,6 +9,8 @@ from posts.choices import PostStatus, Vote
 
 
 class PostGroup(Timestamped):
+    """Model to group posts into series."""
+
     name = models.CharField(max_length=100)
     slug = AutoSlugField(
         populate_from=["name"],
@@ -26,6 +28,8 @@ class PostGroup(Timestamped):
 
 
 class Post(Timestamped):
+    """Model represents Post entity."""
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     post_group = models.ForeignKey(
         "posts.PostGroup", on_delete=models.SET_NULL, null=True, blank=True
@@ -73,10 +77,12 @@ class Post(Timestamped):
         default_related_name = "posts"
 
     def __str__(self):
-        return self.title
+        return f"<{self.pk}: {self.title}>"
 
 
 class Tag(models.Model):
+    """Model to keep all created tags."""
+
     name = models.CharField(max_length=50, unique=True, db_index=True)
 
     def __str__(self):
@@ -84,6 +90,8 @@ class Tag(models.Model):
 
 
 class PostVote(Timestamped):
+    """Model to store post votes."""
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     value = models.SmallIntegerField(choices=Vote.choices)
@@ -95,6 +103,8 @@ class PostVote(Timestamped):
 
 
 class Comment(Timestamped):
+    """Model to store user comment on posts."""
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     parent_comment = models.ForeignKey(
@@ -107,6 +117,8 @@ class Comment(Timestamped):
 
 
 class CommentVote(Timestamped):
+    """Model to store comment votes."""
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     value = models.IntegerField(choices=Vote.choices)
