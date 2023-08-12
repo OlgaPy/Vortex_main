@@ -8,7 +8,7 @@ from users.tests.factories import UserPublicFactory
 
 
 @pytest.mark.django_db
-class TestPublishPost:
+class TestMakePostPublished:
     def test_cant_publish_not_own_post(self, authed_api_client):
         post = PostFactory(status=PostStatus.DRAFT)
         user = UserPublicFactory()
@@ -39,5 +39,5 @@ class TestPublishPost:
 
     def _publish_post(self, client, post):
         return client.post(
-            reverse("v1-api:posts:posts-publish", kwargs={"slug": post.slug})
+            reverse("v1-api:posts:my-posts-publish", kwargs={"slug": post.slug})
         )

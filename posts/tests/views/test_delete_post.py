@@ -22,7 +22,7 @@ class TestDeletePost:
         client = authed_api_client(user)
         result = self._delete_post(client, self.post)
 
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.status_code == status.HTTP_404_NOT_FOUND
         post = Post.objects.filter(pk=self.post.pk).first()
         assert post.status == PostStatus.PUBLISHED
 
@@ -34,5 +34,5 @@ class TestDeletePost:
 
     def _delete_post(self, client, post):
         return client.delete(
-            reverse("v1-api:posts:posts-detail", kwargs={"slug": post.slug})
+            reverse("v1-api:posts:my-posts-detail", kwargs={"slug": post.slug})
         )
