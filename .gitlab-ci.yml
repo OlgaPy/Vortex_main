@@ -1,0 +1,41 @@
+stages:
+  - tests & linters
+
+cache:
+    paths:
+      - ~/.cache/pip/
+
+tests:
+  stage: tests & linters
+  services:
+    - postgres:15.3
+  script:
+    - pip install pytest-cov
+    - pytest --cov --cov-report term --cov-report xml:coverage.xml
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/coverage
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/coverage.xml
+
+linters:
+  stage: tests & linters
+  script:
+    - apt update && apt install git -y
+    - pre-commit run -a
+
+variables:
+  POSTGRES_DB: "kapibara"
+  POSTGRES_USER: "kapibara"
+  POSTGRES_PASSWORD: "kapibara"
+  DATABASE_URL: "psql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+
+default:
+  # uncomment tags once on private runner
+  #tags:
+  #  - vortex
+  before_script:
+    - pip install -r requirements.txt
