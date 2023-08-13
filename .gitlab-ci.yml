@@ -10,16 +10,13 @@ tests:
   services:
     - postgres:15.3
   script:
-    - pip install pytest-cov
     - pytest --cov --cov-report term --cov-report xml:coverage.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/coverage
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: coverage/coverage.xml
+        path: coverage.xml
 
 linters:
   stage: tests & linters
