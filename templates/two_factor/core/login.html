@@ -1,0 +1,11 @@
+{% extends "two_factor/core/login.html" %}
+<h1>sdgsg</h1>
+{% block content %}
+{% if user.is_authenticated %}
+            <h1>Настройка OTP</h1>
+            <p>Для того, чтобы получить доступ к админ-панели, вам нужно <a href="{% url "two_factor:setup" %}">Настроить OTP</a></p>
+
+{% else %}
+        {{ block.super }}
+{% endif %}
+{% endblock %}

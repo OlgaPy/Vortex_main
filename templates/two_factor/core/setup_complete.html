@@ -1,0 +1,9 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1 style="padding-top: 100px;">{% block title %}OTP подключен!{% endblock %}</h1>
+
+    <p><a href="{% url 'admin:index' %}" class="btn btn-block btn-secondary">В КапиБар!</a></p>
+
+{% endblock %}
