@@ -8,6 +8,8 @@ repos:
       - id: check-added-large-files
       - id: detect-private-key
       - id: detect-aws-credentials
+        args:
+          - --allow-missing-credentials
   - repo: https://github.com/ambv/black
     rev: 23.7.0
     hooks:

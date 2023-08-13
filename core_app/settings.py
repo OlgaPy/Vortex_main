@@ -129,12 +129,12 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG" if env.bool("DEBUG") else "INFO",
+        "level": "DEBUG" if DEBUG else "INFO",
     },
     "loggers": {
         "django.db": {
             "handlers": ["console"],
-            "level": "DEBUG" if env.bool("DEBUG") else "INFO",
+            "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
     },
