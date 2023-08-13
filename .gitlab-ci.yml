@@ -35,9 +35,9 @@ variables:
   DATABASE_URL: "psql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
 
 default:
-  # uncomment tags once on private runner
-  #tags:
-  #  - vortex
+  tags:
+    - backend
+    - kapibara
   image: python:3.11-slim-buster
   before_script:
     - pip install -r requirements.txt
