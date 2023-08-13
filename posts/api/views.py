@@ -21,7 +21,6 @@ class MyPostsViewSet(ModelViewSet):
 
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated & Poster,)
-    lookup_url_kwarg = "slug"
     lookup_field = "slug"
     http_method_names = ["post", "get", "patch", "delete"]
 

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from users.models import UserPublic
 
 
-class UserPublicSerializer(serializers.ModelSerializer):
+class UserPublicFullSerializer(serializers.ModelSerializer):
     """Serializer to represent whole user info."""
 
     class Meta:
@@ -13,6 +13,12 @@ class UserPublicSerializer(serializers.ModelSerializer):
             "date_of_birth",
             "avatar",
             "bio",
+            "rating",
+            "comments_count",
+            "votes_up_count",
+            "votes_down_count",
+        )
+        read_only_fields = (
             "rating",
             "comments_count",
             "votes_up_count",
