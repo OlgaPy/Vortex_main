@@ -29,6 +29,7 @@ v1_urls = [
         name="redoc",
     ),
     path("", include("posts.api.urls", namespace="posts")),
+    path("", include("users.api.urls", namespace="users")),
 ]
 
 urlpatterns = [

@@ -17,6 +17,9 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
     bio = models.TextField(blank=True)
     rating = models.FloatField(default=0)
+    comments_count = models.PositiveIntegerField(default=0)
+    votes_up_count = models.PositiveIntegerField(default=0)
+    votes_down_count = models.PositiveIntegerField(default=0)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     user_relation = models.ManyToManyField(

@@ -2,11 +2,13 @@ from rest_framework import serializers
 
 from common.api.fields import WritableSlugRelatedField
 from posts.models import Post, PostVote, Tag
+from users.api.serializers import UserPublicMinimalSerializer
 
 
 class PostSerializer(serializers.ModelSerializer):
     """Serializer to represent Post instance."""
 
+    user = UserPublicMinimalSerializer()
     tags = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     class Meta:
