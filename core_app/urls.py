@@ -11,10 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from two_factor.admin import AdminSiteOTPRequired
 from two_factor.urls import urlpatterns as tf_urls
-
-admin.site.__class__ = AdminSiteOTPRequired
 
 v1_urls = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
