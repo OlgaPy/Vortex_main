@@ -13,6 +13,7 @@ drf-spectacular==0.26.4
 # move the below to dev requirements
 factory-boy==3.3.0
 pytest==7.4.0
+pytest-cov==4.1.0
 pytest-django==4.5.2
 pytest-socket==0.6.0
 pytest-timeout==2.1.0

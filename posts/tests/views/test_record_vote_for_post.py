@@ -12,7 +12,7 @@ class TestRecordVoteForPost:
     def setup(self):
         self.post_original_rating = 10
         self.post_original_votes_up_count = 20
-        self.post_original_votes_down_count = -10
+        self.post_original_votes_down_count = 10
         self.author_original_rating = 15
         self.post = PostFactory(
             user=UserPublicFactory(rating=self.author_original_rating),
