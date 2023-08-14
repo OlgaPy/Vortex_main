@@ -3,6 +3,21 @@ from rest_framework import serializers
 from users.models import UserPublic
 
 
+class UserPublicCreateSerializer(serializers.ModelSerializer):
+    """Serializer to create user account via auth service."""
+
+    class Meta:
+        model = UserPublic
+        fields = (
+            "external_user_uid",
+            "username",
+            "avatar",
+            "date_of_birth",
+            "bio",
+            "is_active",
+        )
+
+
 class UserPublicFullSerializer(serializers.ModelSerializer):
     """Serializer to represent whole user info."""
 

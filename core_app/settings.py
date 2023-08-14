@@ -11,6 +11,7 @@ SECRET_KEY = env.str(
 )
 
 DEBUG = env.bool("DEBUG", default=False)
+ENVIRONMENT = env.bool("ENVIRONMENT", default="local")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", str, ["*"])
 
 DJANGO_APPS = [
@@ -166,3 +167,5 @@ SIMPLE_JWT = {
 TWO_FACTOR_PATCH_ADMIN = env.bool("ENABLE_DJANGO_ADMIN_OTP", True)
 DJANGO_ADMIN_PATH = env.str("DJANGO_ADMIN_PATH", "admin")
 COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
+INTERNAL_TOKEN_HEADER = env.str("INTERNAL_TOKEN_HEADER", "X-Kapibara-Internal-Token")
+INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])

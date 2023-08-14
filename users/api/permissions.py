@@ -1,13 +1,22 @@
 from rest_framework import permissions
 
+from common.helpers import is_request_signed_with_valid_internal_token
+
 
 class Authenticator(permissions.BasePermission):
     """Class to make sure request comes from authenticator service."""
 
     def has_permission(self, request, view):
         """Check if actor has permission to manage users."""
-        # FIXME: add proper checks
-        return True
+        return is_request_signed_with_valid_internal_token(request)
+
+
+class LoadtestWorker(permissions.BasePermission):
+    """Class to make sure request omes from loadtest suite."""
+
+    def has_permission(self, request, view):
+        """Check if actor has permission to perform loadtesting."""
+        return is_request_signed_with_valid_internal_token(request)
 
 
 class OwnUser(permissions.BasePermission):
