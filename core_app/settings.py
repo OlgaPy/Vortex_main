@@ -139,6 +139,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -169,3 +171,4 @@ DJANGO_ADMIN_PATH = env.str("DJANGO_ADMIN_PATH", "admin")
 COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
 INTERNAL_TOKEN_HEADER = env.str("INTERNAL_TOKEN_HEADER", "X-Kapibara-Internal-Token")
 INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])
+LOADTEST_PASSWORD = env.str("LOADTEST_PASSWORD", "testpassword")

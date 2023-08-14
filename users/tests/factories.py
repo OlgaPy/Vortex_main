@@ -3,7 +3,7 @@ from factory.django import DjangoModelFactory
 
 
 class UserPublicFactory(DjangoModelFactory):
-    external_user_uid = factory.Faker("text", max_nb_chars=32)
+    external_user_uid = factory.Faker("text", max_nb_chars=36)
     username = factory.Faker("text", max_nb_chars=100)
     is_active = True
 

@@ -1,6 +1,6 @@
-.PHONY: makemigrations migrate build shell
+.PHONY: makemigrations migrate build shell bash test
 
-makemigrations:
+migrations:
 	docker-compose exec kapibara-monolith ./manage.py makemigrations
 
 migrate:
@@ -12,5 +12,14 @@ build:
 shell:
 	docker-compose exec kapibara-monolith ./manage.py shell_plus
 
+bash:
+	docker-compose exec kapibara-monolith bash
+
 test:
 	docker-compose exec kapibara-monolith pytest
+
+run-for-loadtest:
+	docker-compose up
+
+run-for-loadtest:
+	docker-compose -f docker-compose.yml -f docker-compose.loadtest.yml up

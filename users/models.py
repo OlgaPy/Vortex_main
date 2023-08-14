@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
+from common.helpers import is_prod
 from common.models import Timestamped
 from users.choices import TagStatus, UserCommunityStatus, UserRelationStatus
 from users.managers import KapibaraUserManager
@@ -11,7 +14,7 @@ from users.managers import KapibaraUserManager
 class UserPublic(AbstractBaseUser, PermissionsMixin):
     """Information about user."""
 
-    external_user_uid = models.CharField(max_length=32, unique=True, db_index=True)
+    external_user_uid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=100, unique=True, db_index=True)
     date_of_birth = models.DateField(null=True, blank=True)
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
@@ -36,6 +39,12 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"<{self.pk}: {self.external_user_uid} / {self.username}>"
+
+    def save(self, *args, **kwargs):
+        """Save user and set password if passwort doesn't exist on non prod env."""
+        if not self.password and not is_prod():
+            self.password = make_password(settings.LOADTEST_PASSWORD)
+        super().save(*args, **kwargs)
 
 
 class UserTag(Timestamped):
