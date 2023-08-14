@@ -1,6 +1,6 @@
 from rest_framework.routers import SimpleRouter
 
-from posts.api import views
+from posts.api.v1 import views
 
 app_name = "posts"
 

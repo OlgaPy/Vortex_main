@@ -11,3 +11,6 @@ build:
 
 shell:
 	docker-compose exec kapibara-monolith ./manage.py shell_plus
+
+test:
+	docker-compose exec kapibara-monolith pytest

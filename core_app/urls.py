@@ -28,7 +28,7 @@ v1_urls = [
         SpectacularRedocView.as_view(url_name="v1-api:schema"),
         name="redoc",
     ),
-    path("", include("posts.api.urls", namespace="posts")),
+    path("", include("posts.api.v1.urls", namespace="posts")),
     path("", include("users.api.v1.urls", namespace="users")),
 ]
 
