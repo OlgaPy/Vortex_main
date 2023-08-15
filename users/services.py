@@ -11,7 +11,7 @@ def activate_user_account(user: UserPublic) -> UserPublic:
     logger.info("Activating user %s", user)
     if user.is_active:
         logger.info("User %s already active", user)
-        return
+        return user
     user.is_active = True
     user.save()
     return user

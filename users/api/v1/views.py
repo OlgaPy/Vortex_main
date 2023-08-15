@@ -40,7 +40,7 @@ class UserViewSet(
         """Return serializer class based on action."""
         if self.action == "create":
             return UserPublicCreateSerializer
-        return UserPublicFullSerializer
+        return self.serializer_class
 
     @extend_schema(parameters=[parameters.INTERNAL_TOKEN])
     def create(self, request, *args, **kwargs):
