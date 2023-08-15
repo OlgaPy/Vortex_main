@@ -24,7 +24,6 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", str, ["*"])
 
 
 DJANGO_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -37,12 +36,17 @@ THIRD_PARTY_APPS = [
     "django_extensions",
     "django_filters",
     "drf_spectacular",
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "two_factor",
 ]
 
 KAPIBARA_APPS = [
     "users",
     "posts",
     "communities",
+    "core_app.apps.KapibaraAdminConfig",
 ]
 
 INSTALLED_APPS = [
@@ -57,6 +61,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -69,7 +74,7 @@ ROOT_URLCONF = "core_app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -140,6 +145,7 @@ LOGGING = {
     },
 }
 
+LOGIN_URL = "two_factor:login"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -165,5 +171,6 @@ SIMPLE_JWT = {
     "SIGNING_KEY": env.str("JWT_SIGNING_KEY", SECRET_KEY),
     "USER_ID_FIELD": "external_user_uid",
 }
-
+TWO_FACTOR_PATCH_ADMIN = True
+DJANGO_ADMIN_PATH = env.str("DJANGO_ADMIN_PATH", "admin")
 COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)

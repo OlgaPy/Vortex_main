@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -10,6 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from two_factor.urls import urlpatterns as tf_urls
 
 v1_urls = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
@@ -30,6 +32,7 @@ v1_urls = [
 ]
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("", include(tf_urls)),
+    path(f"{settings.DJANGO_ADMIN_PATH}/", admin.site.urls),
     path("api/v1/", include((v1_urls, "v1"), namespace="v1-api")),
 ]
