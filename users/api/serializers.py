@@ -11,9 +11,7 @@ class UserPublicCreateSerializer(serializers.ModelSerializer):
         fields = (
             "external_user_uid",
             "username",
-            "avatar",
-            "date_of_birth",
-            "bio",
+            "email",
             "is_active",
         )
 

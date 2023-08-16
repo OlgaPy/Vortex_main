@@ -16,6 +16,7 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
 
     external_user_uid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=100, unique=True, db_index=True)
+    email = models.EmailField(blank=True, default="")
     date_of_birth = models.DateField(null=True, blank=True)
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
     bio = models.TextField(blank=True)

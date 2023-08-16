@@ -2,6 +2,7 @@ import datetime
 from pathlib import Path
 
 import environ
+from google.oauth2 import service_account
 
 env = environ.Env()
 
@@ -172,3 +173,13 @@ COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
 INTERNAL_TOKEN_HEADER = env.str("INTERNAL_TOKEN_HEADER", "X-Kapibara-Internal-Token")
 INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])
 LOADTEST_PASSWORD = env.str("LOADTEST_PASSWORD", "testpassword")
+
+# Storages config
+STORAGES = {
+    "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
+    "staticfiles": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
+}
+GS_BUCKET_NAME = env.str("STORAGE_BUCKET_NAME")
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    BASE_DIR / env.str("GOOGLE_APPLICATION_CREDENTIALS_FILE_NAME")
+)
