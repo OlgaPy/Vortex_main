@@ -34,5 +34,5 @@ class TestDeletePost:
 
     def _delete_post(self, client, post):
         return client.delete(
-            reverse("v1-api:posts:my-posts-detail", kwargs={"slug": post.slug})
+            reverse("v1:posts:my-posts-detail", kwargs={"uuid": post.uuid})
         )

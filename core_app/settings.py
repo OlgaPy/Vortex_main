@@ -175,11 +175,17 @@ INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])
 LOADTEST_PASSWORD = env.str("LOADTEST_PASSWORD", "testpassword")
 
 # Storages config
-STORAGES = {
-    "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
-    "staticfiles": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
-}
-GS_BUCKET_NAME = env.str("STORAGE_BUCKET_NAME")
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    BASE_DIR / env.str("GOOGLE_APPLICATION_CREDENTIALS_FILE_NAME")
-)
+if USE_CLOUD_STORAGE := env.bool("USE_CLOUD_STORAGE", False):
+    STORAGES = {
+        "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
+        "staticfiles": {"BACKEND": "common.storages.StaticFilesGoogleStorage"},
+    }
+
+    GS_BUCKET_NAME = env.str("UPLOADS_STORAGE_BUCKET_NAME")
+    STATIC_STORAGE_BUCKET_NAME = env.str("STATIC_STORAGE_BUCKET_NAME", GS_BUCKET_NAME)
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        BASE_DIR / env.str("GOOGLE_APPLICATION_CREDENTIALS_FILE_NAME")
+    )
+    GS_DEFAULT_ACL = "publicRead"
+    GS_QUERYSTRING_AUTH = False
+    GS_FILE_OVERWRITE = False

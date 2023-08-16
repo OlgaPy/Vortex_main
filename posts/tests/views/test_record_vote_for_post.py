@@ -61,6 +61,7 @@ class TestRecordVoteForPost:
 
         assert result.data == {
             "slug": self.post.slug,
+            "uuid": str(self.post.uuid),
             "votes_up_count": self.post_original_votes_up_count + 1
             if vote_value == Vote.UPVOTE
             else self.post_original_votes_up_count,
@@ -95,6 +96,7 @@ class TestRecordVoteForPost:
 
         assert result.data == {
             "slug": self.post.slug,
+            "uuid": str(self.post.uuid),
             "votes_up_count": self.post_original_votes_up_count,
             "votes_down_count": self.post_original_votes_down_count,
             "rating": self.post_original_rating,
@@ -122,6 +124,6 @@ class TestRecordVoteForPost:
 
     def _vote_for_post(self, client, post, vote_value):
         return client.post(
-            reverse("v1-api:posts:posts-vote", kwargs={"slug": post.slug}),
+            reverse("v1:posts:posts-vote", kwargs={"uuid": post.uuid}),
             data={"value": vote_value},
         )

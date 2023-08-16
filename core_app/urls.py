@@ -20,12 +20,12 @@ v1_urls = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "schema/swagger-ui/",
-        SpectacularSwaggerView.as_view(url_name="v1-api:schema"),
+        SpectacularSwaggerView.as_view(url_name="v1:schema"),
         name="swagger-ui",
     ),
     path(
         "schema/redoc/",
-        SpectacularRedocView.as_view(url_name="v1-api:schema"),
+        SpectacularRedocView.as_view(url_name="v1:schema"),
         name="redoc",
     ),
     path("", include("posts.api.v1.urls", namespace="posts")),
@@ -35,5 +35,5 @@ v1_urls = [
 urlpatterns = [
     path("", include(tf_urls)),
     path(f"{settings.DJANGO_ADMIN_PATH}/", admin.site.urls),
-    path("api/v1/", include((v1_urls, "v1"), namespace="v1-api")),
+    path("v1/", include((v1_urls, "v1"), namespace="v1")),
 ]

@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
+from common.deconstructibles import upload_to
 from common.helpers import is_prod
 from common.models import Timestamped
 from users.choices import TagStatus, UserCommunityStatus, UserRelationStatus
@@ -16,9 +17,13 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
 
     external_user_uid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=100, unique=True, db_index=True)
-    email = models.EmailField(blank=True, default="")
+    email = models.EmailField(unique=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to=upload_to("users/avatars/%Y/%m/%d", "external_user_uid"),
+        null=True,
+        blank=True,
+    )
     bio = models.TextField(blank=True)
     rating = models.FloatField(default=0)
     comments_count = models.PositiveIntegerField(default=0)
@@ -37,6 +42,10 @@ class UserPublic(AbstractBaseUser, PermissionsMixin):
     objects = KapibaraUserManager()
 
     USERNAME_FIELD = "username"
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     def __str__(self):
         return f"<{self.pk}: {self.external_user_uid} / {self.username}>"

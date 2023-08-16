@@ -39,5 +39,5 @@ class TestMakePostPublished:
 
     def _publish_post(self, client, post):
         return client.post(
-            reverse("v1-api:posts:my-posts-publish", kwargs={"slug": post.slug})
+            reverse("v1:posts:my-posts-publish", kwargs={"uuid": post.uuid})
         )

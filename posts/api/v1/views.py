@@ -21,7 +21,7 @@ class MyPostsViewSet(ModelViewSet):
 
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated & Poster,)
-    lookup_field = "slug"
+    lookup_field = "uuid"
     http_method_names = ["post", "get", "patch", "delete"]
 
     def get_queryset(self):
@@ -55,8 +55,7 @@ class PostViewSet(ReadOnlyModelViewSet):
     queryset = fetch_new_posts()
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated & Poster,)
-    lookup_url_kwarg = "slug"
-    lookup_field = "slug"
+    lookup_field = "uuid"
 
     def get_permissions(self):
         """Return proper permissions based on action user performing."""

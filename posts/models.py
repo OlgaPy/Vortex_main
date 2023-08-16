@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import UniqueConstraint
@@ -30,6 +32,7 @@ class PostGroup(Timestamped):
 class Post(Timestamped):
     """Model represents Post entity."""
 
+    uuid = models.UUIDField(default=uuid.uuid4)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     post_group = models.ForeignKey(
         "posts.PostGroup", on_delete=models.SET_NULL, null=True, blank=True
