@@ -15,3 +15,14 @@ def activate_user_account(user: UserPublic) -> UserPublic:
     user.is_active = True
     user.save()
     return user
+
+
+def deactivate_user_account(user: UserPublic) -> UserPublic:
+    """Deactivate user account."""
+    logger.info("Activating user %s", user)
+    if not user.is_active:
+        logger.info("User %s already inactive", user)
+        return user
+    user.is_active = False
+    user.save()
+    return user

@@ -22,6 +22,7 @@ class UserPublicFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPublic
         fields = (
+            "external_user_uid",
             "username",
             "date_of_birth",
             "avatar",
@@ -32,6 +33,7 @@ class UserPublicFullSerializer(serializers.ModelSerializer):
             "votes_down_count",
         )
         read_only_fields = (
+            "external_user_uid",
             "rating",
             "comments_count",
             "votes_up_count",

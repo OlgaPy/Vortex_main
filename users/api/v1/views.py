@@ -9,7 +9,7 @@ from common.api import parameters
 from users.api.permissions import Authenticator, LoadtestWorker, OwnUser
 from users.api.serializers import UserPublicCreateSerializer, UserPublicFullSerializer
 from users.models import UserPublic
-from users.services import activate_user_account
+from users.services import activate_user_account, deactivate_user_account
 
 
 class UserViewSet(
@@ -29,7 +29,7 @@ class UserViewSet(
 
     def get_permissions(self):
         """Return proper permissions based on action user performing."""
-        if self.action in ("create", "activate"):
+        if self.action in ("create", "activate", "deactivate"):
             permission = Authenticator | LoadtestWorker
             return [permission()]
         elif self.action in ("update", "partial_update"):
@@ -54,4 +54,12 @@ class UserViewSet(
         """Activate user."""
         user = self.get_object()
         user = activate_user_account(user)
+        return Response(self.get_serializer(user).data, status=status.HTTP_200_OK)
+
+    @extend_schema(parameters=[parameters.INTERNAL_TOKEN])
+    @action(methods=["POST"], detail=True, serializer_class=UserPublicCreateSerializer)
+    def deactivate(self, request, *args, **kwargs):
+        """Deactivate user."""
+        user = self.get_object()
+        user = deactivate_user_account(user)
         return Response(self.get_serializer(user).data, status=status.HTTP_200_OK)

@@ -38,13 +38,23 @@ class TestUsersViewSet:
         assert data["email"] == self.email
         assert data["is_active"] is False
 
-    def test_can_activate_inactive_user_using_service(self, anon_api_client, settings):
+    @pytest.mark.parametrize(
+        "action,initial_is_active,post_action_is_active",
+        (
+            ("activate", False, True),
+            ("deactivate", True, False),
+        ),
+    )
+    def test_can_toggle_user_is_active_using_service(
+        self, action, initial_is_active, post_action_is_active, anon_api_client, settings
+    ):
         settings.INTERNAL_TOKEN_HEADER = self.internal_token_header
         settings.INTERNAL_TOKENS = [self.internal_token]
 
-        user = UserPublicFactory(**self.data, is_active=False)
+        user = UserPublicFactory(**self.data, is_active=initial_is_active)
 
-        result = self._activate_user(
+        result = self._activate_deactivate_user(
+            action,
             anon_api_client(),
             user,
             headers={self.internal_token_header: self.internal_token},
@@ -55,51 +65,78 @@ class TestUsersViewSet:
         assert data["external_user_uid"] == self.external_user_uid
         assert data["username"] == self.username
         assert data["email"] == self.email
-        assert data["is_active"] is True
-        assert user.is_active is True
+        assert data["is_active"] is post_action_is_active
+        assert user.is_active is post_action_is_active
 
-    def test_cant_activate_with_wrong_header_name(self, anon_api_client, settings):
+    @pytest.mark.parametrize(
+        "action,initial_is_active", (("activate", False), ("deactivate", True))
+    )
+    def test_cant_toggle_user_is_active_with_wrong_header_name(
+        self, action, initial_is_active, anon_api_client, settings
+    ):
         settings.INTERNAL_TOKENS = [self.internal_token]
-        user = UserPublicFactory(**self.data, is_active=False)
-        result = self._activate_user(
+        user = UserPublicFactory(**self.data, is_active=initial_is_active)
+        result = self._activate_deactivate_user(
+            action,
             anon_api_client(),
             user,
             headers={"X-Wrong-Header": self.internal_token},
         )
         user.refresh_from_db()
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
-        assert user.is_active is False
+        assert user.is_active is initial_is_active
 
-    def test_cant_activate_with_wrong_token(self, anon_api_client, settings):
+    @pytest.mark.parametrize(
+        "action,initial_is_active", (("activate", False), ("deactivate", True))
+    )
+    def test_cant_toggle_is_active_with_wrong_token(
+        self, action, initial_is_active, anon_api_client, settings
+    ):
         settings.INTERNAL_TOKEN_HEADER = self.internal_token_header
-        user = UserPublicFactory(**self.data, is_active=False)
-        result = self._activate_user(
+        user = UserPublicFactory(**self.data, is_active=initial_is_active)
+        result = self._activate_deactivate_user(
+            action,
             anon_api_client(),
             user,
             headers={self.internal_token_header: "wrong_value"},
         )
         user.refresh_from_db()
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
-        assert user.is_active is False
+        assert user.is_active is initial_is_active
 
-    def test_cant_activate_without_headers(self, anon_api_client):
-        user = UserPublicFactory(**self.data, is_active=False)
-        result = self._activate_user(anon_api_client(), user)
+    @pytest.mark.parametrize(
+        "action,initial_is_active", (("activate", False), ("deactivate", True))
+    )
+    def test_cant_toggle_is_active_without_headers(
+        self, action, initial_is_active, anon_api_client
+    ):
+        user = UserPublicFactory(**self.data, is_active=initial_is_active)
+        result = self._activate_deactivate_user(action, anon_api_client(), user)
         user.refresh_from_db()
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
-        assert user.is_active is False
+        assert user.is_active is initial_is_active
 
     @pytest.mark.parametrize("is_superuser", (True, False))
     @pytest.mark.parametrize("is_staff", (True, False))
+    @pytest.mark.parametrize(
+        "action,initial_is_active", (("activate", False), ("deactivate", True))
+    )
     def test_cant_activate_as_logged_in_user(
-        self, is_staff, is_superuser, authed_api_client
+        self, action, initial_is_active, is_staff, is_superuser, authed_api_client
     ):
         user = UserPublicFactory(
             is_staff=is_staff,
             is_superuser=is_superuser,
+            is_active=initial_is_active,
         )
-        result = self._activate_user(authed_api_client(user), user)
-        assert result.status_code == status.HTTP_403_FORBIDDEN
+        result = self._activate_deactivate_user(action, authed_api_client(user), user)
+        user.refresh_from_db()
+        assert result.status_code == (
+            status.HTTP_403_FORBIDDEN
+            if initial_is_active
+            else status.HTTP_401_UNAUTHORIZED
+        )
+        assert user.is_active is initial_is_active
 
     def test_cant_create_with_wrong_header_name(self, anon_api_client, settings):
         settings.INTERNAL_TOKENS = [self.internal_token]
@@ -168,10 +205,10 @@ class TestUsersViewSet:
     def _create_user(self, client, data, headers=None):
         return client.post(reverse("v1:users:users-list"), data=data, headers=headers)
 
-    def _activate_user(self, client, user, headers=None):
+    def _activate_deactivate_user(self, action, client, user, headers=None):
         return client.post(
             reverse(
-                "v1:users:users-activate",
+                f"v1:users:users-{action}",
                 kwargs={"external_user_uid": user.external_user_uid},
             ),
             headers=headers,
