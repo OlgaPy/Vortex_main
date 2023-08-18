@@ -59,7 +59,7 @@ class TestCreatePost:
         content = [{"edited": "post"}]
         result = self._edit_post(
             authed_api_client(self.user),
-            post.slug,
+            post.uuid,
             {"title": title, "tags": tags, "content": json.dumps(content)},
         )
 
@@ -72,26 +72,26 @@ class TestCreatePost:
     def test_cannot_edit_not_own_post(self, authed_api_client):
         post = PostFactory()
         result = self._edit_post(
-            authed_api_client(self.user), post.slug, {"title": "test"}
+            authed_api_client(self.user), post.uuid, {"title": "test"}
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
     def test_cannot_edit_as_not_logged_in_user(self, anon_api_client):
         post = PostFactory()
-        result = self._edit_post(anon_api_client(), post.slug, {"title": "test"})
+        result = self._edit_post(anon_api_client(), post.uuid, {"title": "test"})
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_cannot_edit_as_not_active_user(self, authed_api_client):
         post = PostFactory(user=UserPublicFactory(is_active=False))
         result = self._edit_post(
-            authed_api_client(post.user), post.slug, {"title": "test"}
+            authed_api_client(post.user), post.uuid, {"title": "test"}
         )
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def _create_post(self, client, data):
-        return client.post(reverse("v1-api:posts:my-posts-list"), data=data)
+        return client.post(reverse("v1:posts:my-posts-list"), data=data)
 
-    def _edit_post(self, client, slug, data):
+    def _edit_post(self, client, uuid, data):
         return client.patch(
-            reverse("v1-api:posts:my-posts-detail", kwargs={"slug": slug}), data=data
+            reverse("v1:posts:my-posts-detail", kwargs={"uuid": uuid}), data=data
         )

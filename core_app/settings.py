@@ -2,26 +2,18 @@ import datetime
 from pathlib import Path
 
 import environ
+from google.oauth2 import service_account
 
 env = environ.Env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str(
     "SECRET_KEY", "django-insecure-34oqj72*yq6cky9nrubxyaw1^hvyybp&7=+uw%f-6wac%og4pn"
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
-
+ENVIRONMENT = env.bool("ENVIRONMENT", default="local")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", str, ["*"])
-
 
 DJANGO_APPS = [
     "django.contrib.auth",
@@ -91,9 +83,6 @@ WSGI_APPLICATION = "core_app.wsgi.application"
 
 DATABASES = {"default": env.db()}
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
@@ -151,6 +140,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -161,16 +152,40 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+RSA_PRIVATE_KEY = env.str("RSA_PRIVATE_KEY", SECRET_KEY)
+RSA_PUBLIC_KEY = env.str("RSA_PUBLIC_KEY", "")
 SIMPLE_JWT = {
+    "ALGORITHM": "RS512" if RSA_PRIVATE_KEY and RSA_PUBLIC_KEY else "HS256",
     "ACCESS_TOKEN_LIFETIME": datetime.timedelta(
         minutes=env.int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 5)
     ),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(
         days=env.int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1)
     ),
-    "SIGNING_KEY": env.str("JWT_SIGNING_KEY", SECRET_KEY),
+    "SIGNING_KEY": RSA_PRIVATE_KEY,
+    "VERIFYING_KEY": RSA_PUBLIC_KEY,
     "USER_ID_FIELD": "external_user_uid",
 }
-TWO_FACTOR_PATCH_ADMIN = True
+
+TWO_FACTOR_PATCH_ADMIN = env.bool("ENABLE_DJANGO_ADMIN_OTP", True)
 DJANGO_ADMIN_PATH = env.str("DJANGO_ADMIN_PATH", "admin")
 COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
+INTERNAL_TOKEN_HEADER = env.str("INTERNAL_TOKEN_HEADER", "X-Kapibara-Internal-Token")
+INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])
+LOADTEST_PASSWORD = env.str("LOADTEST_PASSWORD", "testpassword")
+
+# Storages config
+if USE_CLOUD_STORAGE := env.bool("USE_CLOUD_STORAGE", False):
+    STORAGES = {
+        "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
+        "staticfiles": {"BACKEND": "common.storages.StaticFilesGoogleStorage"},
+    }
+
+    GS_BUCKET_NAME = env.str("UPLOADS_STORAGE_BUCKET_NAME")
+    STATIC_STORAGE_BUCKET_NAME = env.str("STATIC_STORAGE_BUCKET_NAME", GS_BUCKET_NAME)
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        BASE_DIR / env.str("GOOGLE_APPLICATION_CREDENTIALS_FILE_NAME")
+    )
+    GS_DEFAULT_ACL = "publicRead"
+    GS_QUERYSTRING_AUTH = False
+    GS_FILE_OVERWRITE = False

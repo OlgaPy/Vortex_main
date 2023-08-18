@@ -2,16 +2,19 @@ from rest_framework import serializers
 
 from common.api.fields import WritableSlugRelatedField
 from posts.models import Post, PostVote, Tag
+from users.api.serializers import UserPublicMinimalSerializer
 
 
 class PostSerializer(serializers.ModelSerializer):
     """Serializer to represent Post instance."""
 
+    user = UserPublicMinimalSerializer()
     tags = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     class Meta:
         model = Post
         fields = (
+            "uuid",
             "user",
             "title",
             "slug",
@@ -35,6 +38,7 @@ class PostRatingOnlySerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
+            "uuid",
             "slug",
             "votes_up_count",
             "votes_down_count",
@@ -53,6 +57,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
+            "uuid",
             "user",
             "title",
             "slug",
@@ -60,7 +65,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
             "tags",
             "status",
         )
-        read_only_fields = ["slug", "status"]
+        read_only_fields = ["uuid", "slug", "status"]
 
 
 class PostVoteCreateSerializer(serializers.ModelSerializer):

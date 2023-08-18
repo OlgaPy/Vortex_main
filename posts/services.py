@@ -24,6 +24,22 @@ def update_author_rating_on_post_vote(post_vote: PostVote, vote_cancelled: bool 
     author.save(update_fields=["rating"])
 
 
+def update_voter_votes_count_on_post_vote(
+    post_vote: PostVote, vote_cancelled: bool = False
+):
+    """Update votes counts for voter."""
+    voter: UserPublic = post_vote.user
+    operation = {
+        True: operator.sub,
+        False: operator.add,
+    }[vote_cancelled]
+    if post_vote.value == Vote.UPVOTE:
+        voter.votes_up_count = operation(F("votes_up_count"), 1)
+    else:
+        voter.votes_down_count = operation(F("votes_down_count"), 1)
+    voter.save()
+
+
 def update_post_rating_on_vote(post_vote: PostVote, vote_cancelled: bool = False):
     """Update post rating when it gets vote."""
     operation = {
@@ -31,7 +47,7 @@ def update_post_rating_on_vote(post_vote: PostVote, vote_cancelled: bool = False
         False: operator.add,
     }[vote_cancelled]
 
-    post = post_vote.post
+    post: Post = post_vote.post
     post.rating = operation(F("rating"), post_vote.value)
     if post_vote.value == Vote.UPVOTE:
         post.votes_up_count = operation(F("votes_up_count"), 1)
@@ -66,6 +82,7 @@ def record_vote_for_post(post: Post, actor: UserPublic, vote: Vote):
 
     update_post_rating_on_vote(post_vote, vote_cancelled)
     update_author_rating_on_post_vote(post_vote, vote_cancelled)
+    update_voter_votes_count_on_post_vote(post_vote, vote_cancelled)
 
 
 def publish_post(post: Post, actor: UserPublic) -> Post:

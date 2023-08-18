@@ -21,7 +21,12 @@ class TestRecordVoteForPost:
             votes_up_count=self.post_original_votes_up_count,
             votes_down_count=self.post_original_votes_down_count,
         )
-        self.voter = UserPublicFactory()
+        self.voter_original_votes_up_count = 5
+        self.voter_original_votes_down_count = 7
+        self.voter = UserPublicFactory(
+            votes_up_count=self.voter_original_votes_up_count,
+            votes_down_count=self.voter_original_votes_down_count,
+        )
 
     @pytest.mark.parametrize(
         "vote_value,expected_votes_count,expected_post_rating,expected_post_user_rating",
@@ -41,6 +46,7 @@ class TestRecordVoteForPost:
         client = authed_api_client(self.voter)
         result = self._vote_for_post(client, self.post, vote_value)
         self.post.refresh_from_db()
+        self.voter.refresh_from_db()
 
         expected_post_rating = self.post_original_rating + expected_post_rating
         expected_post_user_rating = (
@@ -48,13 +54,19 @@ class TestRecordVoteForPost:
         )
         assert self.post.user.rating == expected_post_user_rating
 
+        if vote_value == Vote.UPVOTE:
+            assert self.voter.votes_up_count == self.voter_original_votes_up_count + 1
+        else:
+            assert self.voter.votes_down_count == self.voter_original_votes_down_count + 1
+
         assert result.data == {
             "slug": self.post.slug,
+            "uuid": str(self.post.uuid),
             "votes_up_count": self.post_original_votes_up_count + 1
-            if vote_value == 1
+            if vote_value == Vote.UPVOTE
             else self.post_original_votes_up_count,
             "votes_down_count": self.post_original_votes_down_count + 1
-            if vote_value == -1
+            if vote_value == Vote.DOWNVOTE
             else self.post_original_votes_down_count,
             "rating": expected_post_rating,
         }
@@ -84,12 +96,16 @@ class TestRecordVoteForPost:
 
         assert result.data == {
             "slug": self.post.slug,
+            "uuid": str(self.post.uuid),
             "votes_up_count": self.post_original_votes_up_count,
             "votes_down_count": self.post_original_votes_down_count,
             "rating": self.post_original_rating,
         }
         self.post.user.refresh_from_db()
         assert self.post.user.rating == self.author_original_rating
+        self.voter.refresh_from_db()
+        assert self.voter.votes_up_count == self.voter_original_votes_up_count
+        assert self.voter.votes_down_count == self.voter_original_votes_down_count
 
     def test_cant_vote_as_anonymous(self, anon_api_client):
         result = self._vote_for_post(anon_api_client(), self.post, Vote.UPVOTE)
@@ -108,6 +124,6 @@ class TestRecordVoteForPost:
 
     def _vote_for_post(self, client, post, vote_value):
         return client.post(
-            reverse("v1-api:posts:posts-vote", kwargs={"slug": post.slug}),
+            reverse("v1:posts:posts-vote", kwargs={"uuid": post.uuid}),
             data={"value": vote_value},
         )

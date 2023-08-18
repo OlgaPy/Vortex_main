@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  kapibara-monolith:
+    environment:
+      DEBUG: "False"
+    command: ["gunicorn", "--config", "gunicorn.py", "core_app.wsgi:application"]
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "2G"
+        reservations:
+          cpus: "2"
+          memory: "1G"
+
+  kapibara-db:
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+        reservations:
+          cpus: "0.5"
+          memory: "512M"
+
+volumes:
+  db-data:
