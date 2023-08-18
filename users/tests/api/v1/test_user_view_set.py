@@ -202,6 +202,83 @@ class TestUsersViewSet:
         )
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_can_update_own_account(self, authed_api_client):
+        new_dob = "2020-01-01"
+        new_bio = "new kapibio"
+        user = UserPublicFactory()
+
+        result = self._update_user(
+            authed_api_client(user),
+            user,
+            data={
+                "date_of_birth": new_dob,
+                "bio": new_bio,
+            },
+        )
+        user.refresh_from_db()
+
+        data = result.data
+        assert result.status_code == status.HTTP_200_OK
+        assert data["date_of_birth"] == new_dob
+        assert data["bio"] == new_bio
+        assert f"{user.date_of_birth:%Y-%m-%d}" == new_dob
+        assert user.bio == new_bio
+
+    def test_cant_update_readonly_fields(self, authed_api_client):
+        initial_rating = 1
+        initial_comments_count = 1
+        initial_votes_up_count = 1
+        initial_votes_down_count = 1
+        user = UserPublicFactory()
+
+        result = self._update_user(
+            authed_api_client(user),
+            user,
+            data={
+                "rating": 1000,
+                "comments_count": 100,
+                "votes_up_count": 200,
+                "votes_down_count": 300,
+            },
+        )
+        user.refresh_from_db()
+
+        data = result.data
+        assert result.status_code == status.HTTP_200_OK
+        assert data["rating"] == initial_rating
+        assert data["comments_count"] == initial_comments_count
+        assert data["votes_up_count"] == initial_votes_up_count
+        assert data["votes_down_count"] == initial_votes_down_count
+        assert user.rating == initial_rating
+        assert user.comments_count == initial_comments_count
+        assert user.votes_up_count == initial_votes_up_count
+        assert user.votes_down_count == initial_votes_down_count
+
+    def test_cant_update_other_account(self, authed_api_client):
+        initial_date_of_birth = "2000-01-01"
+        initial_bio = "viva la kapibara"
+        other_user = UserPublicFactory(
+            date_of_birth=initial_date_of_birth,
+            bio=initial_bio,
+        )
+        user = UserPublicFactory()
+        result = self._update_user(
+            authed_api_client(user),
+            other_user,
+            data={
+                "date_of_birth": "2020-01-01",
+                "bio": "new kapibio",
+            },
+        )
+        other_user.refresh_from_db()
+
+        data = result.data
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
+        assert data["date_of_birth"] == initial_date_of_birth
+        assert data["bio"] == initial_bio
+        assert f"{user.date_of_birth:%Y-%m-%d}" == initial_date_of_birth
+        assert user.bio == initial_bio
+
     def _create_user(self, client, data, headers=None):
         return client.post(reverse("v1:users:users-list"), data=data, headers=headers)
 
@@ -212,4 +289,13 @@ class TestUsersViewSet:
                 kwargs={"external_user_uid": user.external_user_uid},
             ),
             headers=headers,
+        )
+
+    def _update_user(self, client, user, data):
+        return client.patch(
+            reverse(
+                "v1:users:users-detail",
+                kwargs={"external_user_uid": user.external_user_uid},
+            ),
+            data=data,
         )

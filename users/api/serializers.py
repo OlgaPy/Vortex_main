@@ -24,6 +24,7 @@ class UserPublicFullSerializer(serializers.ModelSerializer):
         fields = (
             "external_user_uid",
             "username",
+            "email",
             "date_of_birth",
             "avatar",
             "bio",
@@ -34,6 +35,8 @@ class UserPublicFullSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "external_user_uid",
+            "username",
+            "email",
             "rating",
             "comments_count",
             "votes_up_count",
