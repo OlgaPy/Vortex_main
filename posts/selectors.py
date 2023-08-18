@@ -15,6 +15,7 @@ def fetch_new_posts() -> QuerySet[Post]:
         Post.objects.filter(status=PostStatus.PUBLISHED)
         .order_by("-created_at")
         .prefetch_related("tags")
+        .select_related("user", "community")
     )
 
 
@@ -24,12 +25,18 @@ def fetch_draft_posts() -> QuerySet[Post]:
         Post.objects.filter(status=PostStatus.DRAFT)
         .order_by("-created_at")
         .prefetch_related("tags")
+        .select_related("user", "community")
     )
 
 
 def fetch_user_posts(user: UserPublic) -> QuerySet[Post]:
     """Fetch all user posts, including all statuses."""
-    return user.posts.order_by("-created_at").prefetch_related("tags")
+    return (
+        Post.objects.filter(user=user)
+        .order_by("-created_at")
+        .prefetch_related("tags")
+        .select_related("user", "community")
+    )
 
 
 def fetch_top_posts() -> QuerySet[Post]:

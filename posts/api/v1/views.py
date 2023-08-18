@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from posts.api.permissions import Poster, PostVoter
 from posts.api.serializers import (
     PostCreateSerializer,
     PostRatingOnlySerializer,
@@ -11,7 +12,6 @@ from posts.api.serializers import (
     PostVoteCreateSerializer,
 )
 from posts.models import Post
-from posts.permissions import Poster, PostVoter
 from posts.selectors import fetch_new_posts, fetch_user_posts
 from posts.services import delete_post, publish_post, record_vote_for_post
 
@@ -21,8 +21,7 @@ class MyPostsViewSet(ModelViewSet):
 
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated & Poster,)
-    lookup_url_kwarg = "slug"
-    lookup_field = "slug"
+    lookup_field = "uuid"
     http_method_names = ["post", "get", "patch", "delete"]
 
     def get_queryset(self):
@@ -56,8 +55,7 @@ class PostViewSet(ReadOnlyModelViewSet):
     queryset = fetch_new_posts()
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated & Poster,)
-    lookup_url_kwarg = "slug"
-    lookup_field = "slug"
+    lookup_field = "uuid"
 
     def get_permissions(self):
         """Return proper permissions based on action user performing."""

@@ -9,6 +9,7 @@ class KapibaraUserManager(UserManager):
         fields = {
             self.model.USERNAME_FIELD: username,
             "external_user_uid": username,
+            "is_active": True,
             **extra_fields,
         }
         user = self.model(**fields)

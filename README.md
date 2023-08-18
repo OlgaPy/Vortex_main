@@ -27,8 +27,8 @@ docker-compose exec kapibara-monolith ./manage.py createsuperuser
 5. Некоторые полезные страницы
    * Админка - http://localhost:8888/kapibar/
    * API документация
-     * Swagger - http://localhost:8888/api/v1/schema/swagger-ui/
-     * Redoc - http://localhost:8888/api/v1/schema/redoc/
+     * Swagger - http://localhost:8888/v1/schema/swagger-ui/
+     * Redoc - http://localhost:8888/v1/schema/redoc/
 
 ## Ссылки
 * Прямая линия с разработчиками - https://t.me/straight_line_nop
