@@ -226,10 +226,15 @@ class TestUsersViewSet:
 
     def test_cant_update_readonly_fields(self, authed_api_client):
         initial_rating = 1
-        initial_comments_count = 1
-        initial_votes_up_count = 1
-        initial_votes_down_count = 1
-        user = UserPublicFactory()
+        initial_comments_count = 2
+        initial_votes_up_count = 3
+        initial_votes_down_count = 4
+        user = UserPublicFactory(
+            rating=initial_rating,
+            comments_count=initial_comments_count,
+            votes_up_count=initial_votes_up_count,
+            votes_down_count=initial_votes_down_count,
+        )
 
         result = self._update_user(
             authed_api_client(user),
@@ -254,16 +259,25 @@ class TestUsersViewSet:
         assert user.votes_up_count == initial_votes_up_count
         assert user.votes_down_count == initial_votes_down_count
 
-    def test_cant_update_other_account(self, authed_api_client):
+    @pytest.mark.parametrize(
+        "is_authenticated,expected_status_code",
+        ((True, status.HTTP_403_FORBIDDEN), (False, status.HTTP_401_UNAUTHORIZED)),
+    )
+    def test_cant_update_other_account(
+        self, is_authenticated, expected_status_code, authed_api_client, anon_api_client
+    ):
         initial_date_of_birth = "2000-01-01"
         initial_bio = "viva la kapibara"
         other_user = UserPublicFactory(
             date_of_birth=initial_date_of_birth,
             bio=initial_bio,
         )
-        user = UserPublicFactory()
+        if is_authenticated:
+            client = authed_api_client(UserPublicFactory())
+        else:
+            client = anon_api_client()
         result = self._update_user(
-            authed_api_client(user),
+            client,
             other_user,
             data={
                 "date_of_birth": "2020-01-01",
@@ -272,12 +286,9 @@ class TestUsersViewSet:
         )
         other_user.refresh_from_db()
 
-        data = result.data
-        assert result.status_code == status.HTTP_401_UNAUTHORIZED
-        assert data["date_of_birth"] == initial_date_of_birth
-        assert data["bio"] == initial_bio
-        assert f"{user.date_of_birth:%Y-%m-%d}" == initial_date_of_birth
-        assert user.bio == initial_bio
+        assert result.status_code == expected_status_code
+        assert f"{other_user.date_of_birth:%Y-%m-%d}" == initial_date_of_birth
+        assert other_user.bio == initial_bio
 
     def _create_user(self, client, data, headers=None):
         return client.post(reverse("v1:users:users-list"), data=data, headers=headers)

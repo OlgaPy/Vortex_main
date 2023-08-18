@@ -24,7 +24,7 @@ class UserViewSet(
     queryset = UserPublic.objects.all()
     serializer_class = UserPublicFullSerializer
     lookup_field = "external_user_uid"
-    http_method_names = ["post", "get", "delete"]
+    http_method_names = ["post", "get", "delete", "patch"]
     permission_classes = [Authenticator | LoadtestWorker]
 
     def get_permissions(self):
