@@ -19,20 +19,3 @@ class PostVoteFactory(DjangoModelFactory):
 
     class Meta:
         model = "posts.PostVote"
-
-
-class CommentFactory(DjangoModelFactory):
-    user = factory.SubFactory(UserPublicFactory)
-    post = factory.SubFactory(PostFactory)
-    content = factory.Faker("text")
-
-    class Meta:
-        model = "posts.Comment"
-
-
-class CommentVoteFactory(DjangoModelFactory):
-    user = factory.SubFactory(UserPublicFactory)
-    comment = factory.SubFactory(CommentFactory)
-
-    class Meta:
-        model = "posts.CommentVote"
