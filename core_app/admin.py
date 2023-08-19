@@ -2,4 +2,4 @@ from two_factor.admin import AdminSiteOTPRequired
 
 
 class KapibaraAdmin(AdminSiteOTPRequired):
-    site_header = "Kapibar"
+    site_header = "КапиБар"

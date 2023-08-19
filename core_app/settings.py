@@ -32,12 +32,14 @@ THIRD_PARTY_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "two_factor",
+    "mptt",
 ]
 
 KAPIBARA_APPS = [
     "users",
     "posts",
     "communities",
+    "comments",
     "core_app.apps.KapibaraAdminConfig",
 ]
 
