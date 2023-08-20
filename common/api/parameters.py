@@ -20,3 +20,10 @@ POST_UUID = OpenApiParameter(
     location=OpenApiParameter.QUERY,
     description="UUID of the post to which comments are belongs.",
 )
+PARENT_COMMENT_UUID = OpenApiParameter(
+    name="parent",
+    type=uuid.UUID,
+    required=False,
+    location=OpenApiParameter.QUERY,
+    description="UUID of the comment to fetch all children comments.",
+)

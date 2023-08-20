@@ -7,7 +7,7 @@ from comments.api.permissions import CommentPoster
 from comments.api.serializers import CommentCreateSerializer, CommentSerializer
 from comments.filters import CommentFilter
 from comments.models import Comment
-from common.api.parameters import POST_UUID
+from common.api.parameters import PARENT_COMMENT_UUID, POST_UUID
 
 
 class CommentViewSet(
@@ -17,7 +17,11 @@ class CommentViewSet(
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
-    queryset = Comment.objects.select_related("user", "post")
+    queryset = (
+        Comment.objects.root_nodes()
+        .select_related("user", "post", "parent")
+        .order_by("created_at")
+    )
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated & CommentPoster,)
     lookup_field = "uuid"
@@ -35,7 +39,7 @@ class CommentViewSet(
             return [AllowAny()]
         return super().get_permissions()
 
-    @extend_schema(parameters=[POST_UUID])
+    @extend_schema(parameters=[POST_UUID, PARENT_COMMENT_UUID])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 

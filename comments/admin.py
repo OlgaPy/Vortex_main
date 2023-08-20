@@ -6,8 +6,6 @@ from comments.models import Comment
 
 @admin.register(Comment)
 class CommentAdmin(MPTTModelAdmin):
-    mptt_level_indent = 5
-
     mptt_indent_field = "short_content"
     list_display_links = ("short_content",)
     list_display = (
@@ -26,7 +24,7 @@ class CommentAdmin(MPTTModelAdmin):
         "votes_up_count",
         "votes_down_count",
         "rating",
-        "created_at",
+        # "created_at",
     )
     raw_id_fields = (
         "post",

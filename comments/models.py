@@ -31,8 +31,8 @@ class Comment(MPTTModel, Timestamped):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
 
-    class MPTTMeta:
-        order_insertion_by = ["created_at"]
+    # class MPTTMeta:
+    #     order_insertion_by = ["pk"]
 
     def __str__(self):
         return f"<{self.pk}: {self.user.username} -> {self.post.title}>"

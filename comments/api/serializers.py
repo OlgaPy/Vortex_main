@@ -18,6 +18,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = (
+            "uuid",
             "user",
             "post",
             "parent",
@@ -29,6 +30,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         )
 
         read_only_fields = (
+            "uuid",
             "rating",
             "votes_up_count",
             "votes_down_count",
@@ -39,7 +41,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         """Validate comment data, make sure parent comment from the same post."""
         if parent := attrs.get("parent"):
             post = attrs["post"]
-            if parent.pk != post.pk:
+            if parent.post_id != post.pk:
                 raise ValidationError("Нельзя отвечать на комментарий из другого поста!")
         return super().validate(attrs)
 
@@ -48,6 +50,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """Serializer to represent comment."""
 
     user = UserPublicMinimalSerializer()
+    children = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -59,5 +62,9 @@ class CommentSerializer(serializers.ModelSerializer):
             "votes_up_count",
             "votes_down_count",
             "created_at",
+            "children",
         )
         read_only_fields = fields
+
+    def get_children(self, obj: Comment):
+        return CommentSerializer(obj.get_children(), many=True).data
