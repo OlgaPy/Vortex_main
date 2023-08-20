@@ -47,7 +47,7 @@ class PostRatingOnlySerializer(serializers.ModelSerializer):
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
-    """serializer to accept and validate data submitted as a post vote."""
+    """Serializer to accept and validate data to create Post."""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     tags = WritableSlugRelatedField(
