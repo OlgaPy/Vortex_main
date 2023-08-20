@@ -130,7 +130,7 @@ LOGGING = {
     "loggers": {
         "django.db": {
             "handlers": ["console"],
-            "level": "DEBUG" if DEBUG and 0 else "INFO",
+            "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
     },

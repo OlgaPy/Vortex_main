@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from comments.models import Comment
+from comments.selectors import get_children_comments
 from posts.models import Post
 from users.api.serializers import UserPublicMinimalSerializer
 
@@ -67,4 +68,8 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_children(self, obj: Comment):
-        return CommentSerializer(obj.get_children(), many=True).data
+        return CommentSerializer(
+            get_children_comments(obj, max_level=self.context.get("max_level")),
+            many=True,
+            context=self.context,
+        ).data
