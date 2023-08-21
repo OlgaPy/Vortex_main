@@ -7,7 +7,7 @@ from comments.api.permissions import CommentPoster
 from comments.api.serializers import CommentCreateSerializer, CommentSerializer
 from comments.filters import CommentFilter
 from comments.models import Comment
-from comments.selectors import get_user_default_comments_level
+from comments.selectors import get_comments_root_nodes_qs, get_user_default_comments_level
 from comments.services import update_author_comments_count, update_post_comments_count
 from common.api.parameters import PARENT_COMMENT_UUID, POST_UUID
 
@@ -19,9 +19,7 @@ class CommentViewSet(
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
-    queryset = (
-        Comment.objects.root_nodes().select_related("user", "post").order_by("created_at")
-    )
+    queryset = get_comments_root_nodes_qs()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated & CommentPoster,)
     lookup_field = "uuid"

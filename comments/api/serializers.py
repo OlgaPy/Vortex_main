@@ -11,9 +11,12 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     """Serializer to create comment."""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    post = serializers.SlugRelatedField(slug_field="uuid", queryset=Post.objects.all())
+    author = UserPublicMinimalSerializer(source="user", read_only=True)
+    post = serializers.SlugRelatedField(
+        slug_field="uuid", queryset=Post.objects.only("pk")
+    )
     parent = serializers.SlugRelatedField(
-        slug_field="uuid", queryset=Comment.objects.all(), required=False
+        slug_field="uuid", queryset=Comment.objects.only("pk"), required=False
     )
 
     class Meta:
@@ -21,21 +24,15 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         fields = (
             "uuid",
             "user",
+            "author",
             "post",
             "parent",
             "content",
-            "rating",
-            "votes_up_count",
-            "votes_down_count",
-            "created_at",
         )
 
         read_only_fields = (
             "uuid",
-            "rating",
-            "votes_up_count",
-            "votes_down_count",
-            "created_at",
+            "author",
         )
 
     def validate(self, attrs):
@@ -50,14 +47,14 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     """Serializer to represent comment."""
 
-    user = UserPublicMinimalSerializer()
+    author = UserPublicMinimalSerializer(source="user")
     children = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = (
             "uuid",
-            "user",
+            "author",
             "content",
             "rating",
             "votes_up_count",

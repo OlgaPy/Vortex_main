@@ -29,6 +29,6 @@ class CommentFilter(filters.FilterSet):
         try:
             parent = Comment.objects.get(uuid=value)
         except Comment.DoesNotExist:
-            return queryset
+            return queryset.none()
 
         return parent.get_children()

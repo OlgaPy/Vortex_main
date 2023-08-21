@@ -8,14 +8,14 @@ from users.api.serializers import UserPublicMinimalSerializer
 class PostSerializer(serializers.ModelSerializer):
     """Serializer to represent Post instance."""
 
-    user = UserPublicMinimalSerializer()
+    author = UserPublicMinimalSerializer(source="user")
     tags = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     class Meta:
         model = Post
         fields = (
             "uuid",
-            "user",
+            "author",
             "title",
             "slug",
             "content",
@@ -50,6 +50,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     """Serializer to accept and validate data to create Post."""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    author = UserPublicMinimalSerializer(source="user", read_only=True)
     tags = WritableSlugRelatedField(
         slug_field="name", queryset=Tag.objects.all(), many=True, required=False
     )
@@ -59,13 +60,19 @@ class PostCreateSerializer(serializers.ModelSerializer):
         fields = (
             "uuid",
             "user",
+            "author",
             "title",
             "slug",
             "content",
             "tags",
             "status",
         )
-        read_only_fields = ["uuid", "slug", "status"]
+        read_only_fields = (
+            "uuid",
+            "author",
+            "slug",
+            "status",
+        )
 
 
 class PostVoteCreateSerializer(serializers.ModelSerializer):

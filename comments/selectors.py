@@ -16,3 +16,10 @@ def get_children_comments(
 def get_user_default_comments_level(user: UserPublic) -> int:
     # TODO: implement this
     return 2
+
+
+def get_comments_root_nodes_qs() -> TreeQuerySet[Comment]:
+    """Return comments root nodes queryset."""
+    return (
+        Comment.objects.root_nodes().select_related("user", "post").order_by("created_at")
+    )
