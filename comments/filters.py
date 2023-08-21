@@ -9,6 +9,9 @@ class CommentFilter(filters.FilterSet):
     parent = filters.UUIDFilter(method="filter_by_parent")
 
     def __init__(self, data=None, *args, **kwargs):
+        method = getattr(kwargs.get("request"), "method", None)
+        if method in ("PATCH", "DELETE"):
+            return super().__init__(data, *args, **kwargs)
         if data is not None:
             data = data.copy()
             if not data.get("post"):

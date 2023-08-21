@@ -10,12 +10,15 @@ djangorestframework==3.14.0
 django-filter==23.2
 djangorestframework-simplejwt==5.2.2
 drf-spectacular==0.26.4
+drf-access-policy==1.5.0
 django-two-factor-auth[phonenumberslite]==1.15.3
 cryptography==41.0.3
 django-storages[google]==1.13.2
 django-mptt==0.14.0
+funcy==2.0
 # move the below to dev requirements
 factory-boy==3.3.0
+freezegun==1.2.2
 pytest==7.4.0
 pytest-cov==4.1.0
 pytest-django==4.5.2

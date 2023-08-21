@@ -7,6 +7,23 @@ from posts.models import Post
 from users.api.serializers import UserPublicMinimalSerializer
 
 
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    author = UserPublicMinimalSerializer(source="user", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = (
+            "uuid",
+            "author",
+            "content",
+        )
+
+        read_only_fields = (
+            "uuid",
+            "author",
+        )
+
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     """Serializer to create comment."""
 

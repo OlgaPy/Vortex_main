@@ -1,10 +1,13 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from comments.api.permissions import CommentPoster
-from comments.api.serializers import CommentCreateSerializer, CommentSerializer
+from comments.api.policies import CommentAccessPolicy
+from comments.api.serializers import (
+    CommentCreateSerializer,
+    CommentSerializer,
+    CommentUpdateSerializer,
+)
 from comments.filters import CommentFilter
 from comments.models import Comment
 from comments.selectors import get_comments_root_nodes_qs, get_user_default_comments_level
@@ -21,21 +24,18 @@ class CommentViewSet(
 ):
     queryset = get_comments_root_nodes_qs()
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticated & CommentPoster,)
+    permission_classes = (CommentAccessPolicy,)
     lookup_field = "uuid"
     http_method_names = ["post", "get", "patch", "delete"]
     pagination_class = None
     filterset_class = CommentFilter
 
     def get_serializer_class(self):
-        if self.action in ["create", "update", "partial_update"]:
+        if self.action in ["create"]:
             return CommentCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return CommentUpdateSerializer
         return super().get_serializer_class()
-
-    def get_permissions(self):
-        if self.action == "list":
-            return [AllowAny()]
-        return super().get_permissions()
 
     def get_serializer_context(self):
         # FIXME: This need to move to selectors

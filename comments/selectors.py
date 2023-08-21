@@ -1,3 +1,4 @@
+from django.conf import settings
 from mptt.querysets import TreeQuerySet
 
 from comments.models import Comment
@@ -14,8 +15,8 @@ def get_children_comments(
 
 
 def get_user_default_comments_level(user: UserPublic) -> int:
-    # TODO: implement this
-    return 2
+    # TODO: implement this bases on user settings
+    return settings.COMMENTS_TREE_DEFAULT_LEVEL
 
 
 def get_comments_root_nodes_qs() -> TreeQuerySet[Comment]:

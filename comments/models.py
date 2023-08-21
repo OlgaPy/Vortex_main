@@ -5,7 +5,7 @@ from django.db import models
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
-from comments.choices import CommentVote
+from comments.choices import Vote
 from common.models import Timestamped
 
 
@@ -31,9 +31,6 @@ class Comment(MPTTModel, Timestamped):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
 
-    # class MPTTMeta:
-    #     order_insertion_by = ["pk"]
-
     def __str__(self):
         return f"<{self.pk}: {self.user.username} -> {self.post.title}>"
 
@@ -41,9 +38,13 @@ class Comment(MPTTModel, Timestamped):
 class CommentVote(Timestamped):
     """Model to store comment votes."""
 
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    comment = models.ForeignKey("comments.Comment", on_delete=models.CASCADE)
-    value = models.IntegerField(choices=CommentVote.choices)
+    user = models.ForeignKey(
+        get_user_model(), related_name="comment_votes", on_delete=models.CASCADE
+    )
+    comment = models.ForeignKey(
+        "comments.Comment", related_name="votes", on_delete=models.CASCADE
+    )
+    value = models.IntegerField(choices=Vote.choices)
 
     class Meta:
         unique_together = ("user", "comment")
