@@ -7,8 +7,11 @@ from posts.models import Post
 from users.api.serializers import UserPublicMinimalSerializer
 
 
-class CommentUpdateSerializer(serializers.ModelSerializer):
-    author = UserPublicMinimalSerializer(source="user", read_only=True)
+class CommentSerializer(serializers.ModelSerializer):
+    """Serializer to represent comment."""
+
+    author = UserPublicMinimalSerializer(source="user")
+    children = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -16,12 +19,21 @@ class CommentUpdateSerializer(serializers.ModelSerializer):
             "uuid",
             "author",
             "content",
+            "rating",
+            "votes_up_count",
+            "votes_down_count",
+            "created_at",
+            "level",
+            "children",
         )
+        read_only_fields = fields
 
-        read_only_fields = (
-            "uuid",
-            "author",
-        )
+    def get_children(self, obj: Comment):
+        return CommentSerializer(
+            get_children_comments(obj, max_level=self.context.get("max_level")),
+            many=True,
+            context=self.context,
+        ).data
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
@@ -61,11 +73,8 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    """Serializer to represent comment."""
-
-    author = UserPublicMinimalSerializer(source="user")
-    children = serializers.SerializerMethodField()
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    author = UserPublicMinimalSerializer(source="user", read_only=True)
 
     class Meta:
         model = Comment
@@ -73,17 +82,9 @@ class CommentSerializer(serializers.ModelSerializer):
             "uuid",
             "author",
             "content",
-            "rating",
-            "votes_up_count",
-            "votes_down_count",
-            "created_at",
-            "children",
         )
-        read_only_fields = fields
 
-    def get_children(self, obj: Comment):
-        return CommentSerializer(
-            get_children_comments(obj, max_level=self.context.get("max_level")),
-            many=True,
-            context=self.context,
-        ).data
+        read_only_fields = (
+            "uuid",
+            "author",
+        )

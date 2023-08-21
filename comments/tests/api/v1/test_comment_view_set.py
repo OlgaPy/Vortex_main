@@ -167,16 +167,17 @@ class TestCommentViewSet:
             False,
         ),
     )
+    @pytest.mark.parametrize("expected_levels", (3, 5))
     def test_can_fetch_children_comments_up_to_level(
-        self, logged_in, authed_api_client, anon_api_client
+        self, expected_levels, logged_in, authed_api_client, anon_api_client
     ):
-        expected_levels = 5
         comment = None
-        for _ in range(expected_levels + 3):
+        for _ in range(expected_levels + 2):
             comment = CommentFactory(post=self.post, parent=comment, user=self.user)
+
         client = authed_api_client(self.user) if logged_in else anon_api_client()
         with patch(
-            "comments.selectors.get_user_default_comments_level",
+            "comments.api.v1.views.get_user_default_comments_level",
             return_value=expected_levels,
         ):
             result = self._get_comments(client, post_uuid=self.post.uuid)
