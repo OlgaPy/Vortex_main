@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from unittest.mock import patch
 
 import pytest
@@ -62,13 +63,22 @@ class TestCommentViewSet:
                 "parent": root_comment.uuid,
             },
         )
+        assert result.status_code == status.HTTP_201_CREATED, result.content.decode()
         root_comment.refresh_from_db()
-        data = result.data
-        assert result.status_code == status.HTTP_201_CREATED
         assert self.post.comments.count() == 2
         child_comment = first(root_comment.get_children())
 
-        assert data["uuid"] == str(child_comment.uuid)
+        assert result.data["uuid"] == str(child_comment.uuid)
+
+    def test_cant_reply_to_comment_and_set_other_post(self, authed_api_client):
+        root_comment = CommentFactory()
+        result = self._post_comment(
+            authed_api_client(self.user),
+            self.post,
+            data={"content": "test", "parent": root_comment.uuid},
+        )
+
+        assert result.status_code == status.HTTP_400_BAD_REQUEST, result.content.decode()
 
     def test_can_edit_comment(self, authed_api_client):
         comment = CommentFactory(post=self.post)
@@ -77,10 +87,9 @@ class TestCommentViewSet:
             authed_api_client(comment.user), comment, data={"content": new_content}
         )
 
-        assert result.status_code == status.HTTP_200_OK
-        data = result.data
+        assert result.status_code == status.HTTP_200_OK, result.content.decode()
         comment.refresh_from_db()
-        assert data["content"] == new_content
+        assert result.data["content"] == new_content
         assert comment.content == new_content
 
     def test_cannot_edit_not_own_comment(self, authed_api_client):
@@ -89,13 +98,13 @@ class TestCommentViewSet:
             authed_api_client(self.user), comment, data={"content": "new content"}
         )
 
-        assert result.status_code == status.HTTP_403_FORBIDDEN
+        assert result.status_code == status.HTTP_403_FORBIDDEN, result.content.decode()
 
     def test_not_logged_in_cannot_edit_comment(self, anon_api_client):
         result = self._edit_comment(
             anon_api_client(), CommentFactory(), data={"content": "new content"}
         )
-        assert result.status_code == status.HTTP_401_UNAUTHORIZED
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED, result.content.decode()
 
     def test_cannot_edit_comment_with_ratings(self, authed_api_client):
         comment = CommentFactory(post=self.post)
@@ -104,7 +113,7 @@ class TestCommentViewSet:
             authed_api_client(comment.user), comment, data={"content": "edited comment"}
         )
 
-        assert result.status_code == status.HTTP_403_FORBIDDEN
+        assert result.status_code == status.HTTP_403_FORBIDDEN, result.content.decode()
 
     def test_cannot_edit_comment_after_specific_time(self, authed_api_client, settings):
         minutes = 1
@@ -118,14 +127,14 @@ class TestCommentViewSet:
                 data={"content": "edited comment"},
             )
 
-        assert result.status_code == status.HTTP_403_FORBIDDEN
+        assert result.status_code == status.HTTP_403_FORBIDDEN, result.content.decode()
 
     def test_cannot_delete_comment(self, authed_api_client):
         result = self._delete_comment(
             authed_api_client(self.user),
             CommentFactory(user=self.user),
         )
-        assert result.status_code == status.HTTP_403_FORBIDDEN
+        assert result.status_code == status.HTTP_403_FORBIDDEN, result.content.decode()
 
     @pytest.mark.parametrize("logged_in", (True, False))
     def test_cant_fetch_comments_without_post_uuid(
@@ -134,15 +143,10 @@ class TestCommentViewSet:
         client = authed_api_client(self.user) if logged_in else anon_api_client()
         CommentFactory(post=self.post)
         result = self._get_comments(client)
+        assert result.status_code == status.HTTP_200_OK, result.content.decode()
         assert len(result.data) == 0
 
-    @pytest.mark.parametrize(
-        "logged_in",
-        (
-            True,
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("logged_in", (True, False))
     def test_can_fetch_children_comments_for_specific_comment(
         self, logged_in, authed_api_client, anon_api_client
     ):
@@ -154,19 +158,25 @@ class TestCommentViewSet:
             client, post_uuid=self.post.uuid, parent_uuid=root_comment.uuid
         )
 
-        assert result.status_code == status.HTTP_200_OK
+        assert result.status_code == status.HTTP_200_OK, result.content.decode()
         data = result.data
         comment_from_api = first(data)
 
         assert comment_from_api["uuid"] == str(child_comment.uuid)
 
-    @pytest.mark.parametrize(
-        "logged_in",
-        (
-            True,
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("logged_in", (True, False))
+    def test_no_comments_if_parent_comment_not_found(
+        self, logged_in, authed_api_client, anon_api_client
+    ):
+        CommentFactory(parent=CommentFactory(post=self.post), post=self.post)
+        client = authed_api_client(self.user) if logged_in else anon_api_client()
+        result = self._get_comments(
+            client, post_uuid=self.post.uuid, parent_uuid=uuid.uuid4()
+        )
+        assert result.status_code == status.HTTP_200_OK, result.content.decode()
+        assert len(result.data) == 0
+
+    @pytest.mark.parametrize("logged_in", (True, False))
     @pytest.mark.parametrize("expected_levels", (3, 5))
     def test_can_fetch_children_comments_up_to_level(
         self, expected_levels, logged_in, authed_api_client, anon_api_client
@@ -182,6 +192,7 @@ class TestCommentViewSet:
         ):
             result = self._get_comments(client, post_uuid=self.post.uuid)
 
+        assert result.status_code == status.HTTP_200_OK, result.content.decode()
         children = first(result.data)
         levels = 0
         while children:
