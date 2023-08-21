@@ -1,7 +1,9 @@
 import datetime
+from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
+from django.utils.http import urlencode
 from freezegun import freeze_time
 from funcy import first
 from rest_framework import status
@@ -125,13 +127,79 @@ class TestCommentViewSet:
         )
         assert result.status_code == status.HTTP_403_FORBIDDEN
 
-    @pytest.mark.skip
-    def test_need_post_uuid_param_to_fetch_comments(self):
-        assert False
+    @pytest.mark.parametrize("logged_in", (True, False))
+    def test_cant_fetch_comments_without_post_uuid(
+        self, logged_in, authed_api_client, anon_api_client
+    ):
+        client = authed_api_client(self.user) if logged_in else anon_api_client()
+        CommentFactory(post=self.post)
+        result = self._get_comments(client)
+        assert len(result.data) == 0
 
-    @pytest.mark.skip
-    def test_can_get_children_comments_up_to_level(self):
-        assert False
+    @pytest.mark.parametrize(
+        "logged_in",
+        (
+            True,
+            False,
+        ),
+    )
+    def test_can_fetch_children_comments_for_specific_comment(
+        self, logged_in, authed_api_client, anon_api_client
+    ):
+        root_comment = CommentFactory(post=self.post)
+        child_comment = CommentFactory(parent=root_comment, post=self.post)
+        client = authed_api_client(self.user) if logged_in else anon_api_client()
+
+        result = self._get_comments(
+            client, post_uuid=self.post.uuid, parent_uuid=root_comment.uuid
+        )
+
+        assert result.status_code == status.HTTP_200_OK
+        data = result.data
+        comment_from_api = first(data)
+
+        assert comment_from_api["uuid"] == str(child_comment.uuid)
+
+    @pytest.mark.parametrize(
+        "logged_in",
+        (
+            True,
+            False,
+        ),
+    )
+    def test_can_fetch_children_comments_up_to_level(
+        self, logged_in, authed_api_client, anon_api_client
+    ):
+        expected_levels = 5
+        comment = None
+        for _ in range(expected_levels + 3):
+            comment = CommentFactory(post=self.post, parent=comment, user=self.user)
+        client = authed_api_client(self.user) if logged_in else anon_api_client()
+        with patch(
+            "comments.selectors.get_user_default_comments_level",
+            return_value=expected_levels,
+        ):
+            result = self._get_comments(client, post_uuid=self.post.uuid)
+
+        children = first(result.data)
+        levels = 0
+        while children:
+            children = first(children["children"])
+            levels += 1
+        assert levels - 1 == expected_levels
+
+    def _get_comments(self, client, post_uuid=None, parent_uuid=None):
+        url = reverse("v1:comments:comments-list")
+        params = {}
+        if post_uuid:
+            params["post"] = post_uuid
+        if parent_uuid:
+            params["parent"] = parent_uuid
+
+        if params:
+            url = f"{url}?{urlencode(params)}"
+
+        return client.get(url)
 
     def _post_comment(self, client, post, data):
         data["post"] = post.uuid

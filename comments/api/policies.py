@@ -1,6 +1,7 @@
-from django.conf import settings
 from django.utils import timezone
 from rest_access_policy import AccessPolicy, Statement
+
+from comments.selectors import get_comment_editable_window_minutes
 
 
 class CommentAccessPolicy(AccessPolicy):
@@ -45,4 +46,4 @@ class CommentAccessPolicy(AccessPolicy):
         now = timezone.now()
         return (
             now - comment.created_at
-        ).total_seconds() <= settings.COMMENTS_EDITABLE_WINDOW_MINUTES * 60
+        ).total_seconds() <= get_comment_editable_window_minutes() * 60

@@ -15,7 +15,7 @@ def get_children_comments(
 
 
 def get_user_default_comments_level(user: UserPublic) -> int:
-    # TODO: implement this bases on user settings
+    # TODO: implement this based on user settings
     return settings.COMMENTS_TREE_DEFAULT_LEVEL
 
 
@@ -24,3 +24,8 @@ def get_comments_root_nodes_qs() -> TreeQuerySet[Comment]:
     return (
         Comment.objects.root_nodes().select_related("user", "post").order_by("created_at")
     )
+
+
+def get_comment_editable_window_minutes() -> int:
+    """Return for how many minutes since posting comment can be edited."""
+    return settings.COMMENTS_EDITABLE_WINDOW_MINUTES
