@@ -5,7 +5,7 @@ from posts.api.v1 import views
 app_name = "posts"
 
 router = SimpleRouter()
-router.register("posts", views.PostViewSet, basename="posts")
-router.register("my-posts", views.MyPostsViewSet, basename="my-posts")
+router.register("my", views.MyPostsViewSet, basename="my-posts")
+router.register("", views.PostViewSet, basename="posts")
 
 urlpatterns = router.urls

@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 
 class UserPublicFactory(DjangoModelFactory):
     external_user_uid = factory.Faker("uuid4")
-    username = factory.Faker("text", max_nb_chars=100)
+    username = factory.Faker("user_name")
     email = factory.Faker("email")
     is_active = True
 
