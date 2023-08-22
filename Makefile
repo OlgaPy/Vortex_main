@@ -16,7 +16,7 @@ bash:
 	docker-compose exec kapibara-monolith bash
 
 test:
-	docker-compose exec kapibara-monolith pytest
+	docker-compose run kapibara-monolith pytest
 
 run-for-loadtest:
 	docker-compose -f docker-compose.yml -f docker-compose.loadtest.yml up

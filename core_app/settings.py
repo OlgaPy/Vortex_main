@@ -32,12 +32,14 @@ THIRD_PARTY_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "two_factor",
+    "mptt",
 ]
 
 KAPIBARA_APPS = [
     "users",
     "posts",
     "communities",
+    "comments",
     "core_app.apps.KapibaraAdminConfig",
 ]
 
@@ -140,6 +142,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -173,6 +176,9 @@ COMMENT_VOTE_RATING_COEFF = env.float("COMMENT_VOTE_RATING_COEFF", 0.5)
 INTERNAL_TOKEN_HEADER = env.str("INTERNAL_TOKEN_HEADER", "X-Kapibara-Internal-Token")
 INTERNAL_TOKENS = env.list("INTERNAL_TOKENS", cast=str, default=[])
 LOADTEST_PASSWORD = env.str("LOADTEST_PASSWORD", "testpassword")
+
+COMMENTS_EDITABLE_WINDOW_MINUTES = env.int("COMMENTS_EDITABLE_WINDOW_MINUTES", 2)
+COMMENTS_TREE_DEFAULT_LEVEL = env.int("COMMENTS_TREE_DEFAULT_LEVEL", 2)
 
 # Storages config
 if USE_CLOUD_STORAGE := env.bool("USE_CLOUD_STORAGE", False):

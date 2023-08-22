@@ -32,7 +32,9 @@ class PostGroup(Timestamped):
 class Post(Timestamped):
     """Model represents Post entity."""
 
-    uuid = models.UUIDField(default=uuid.uuid4)
+    uuid = models.UUIDField(
+        default=uuid.uuid4, unique=True, db_index=True, editable=False
+    )
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     post_group = models.ForeignKey(
         "posts.PostGroup", on_delete=models.SET_NULL, null=True, blank=True
@@ -103,28 +105,3 @@ class PostVote(Timestamped):
         constraints = [
             UniqueConstraint(fields=("user", "post"), name="user_post_vote"),
         ]
-
-
-class Comment(Timestamped):
-    """Model to store user comment on posts."""
-
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-    parent_comment = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="replies", null=True, blank=True
-    )
-    content = models.TextField()
-    votes_up_count = models.IntegerField(default=0)
-    votes_down_count = models.IntegerField(default=0)
-    rating = models.IntegerField(default=0)
-
-
-class CommentVote(Timestamped):
-    """Model to store comment votes."""
-
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    value = models.IntegerField(choices=Vote.choices)
-
-    class Meta:
-        unique_together = ("user", "comment")
