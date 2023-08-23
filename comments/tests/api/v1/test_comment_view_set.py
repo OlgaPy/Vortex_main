@@ -10,7 +10,7 @@ from funcy import first
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from comments.tests.factories import CommentFactory, VoteFactory
+from comments.tests.factories import CommentFactory, CommentVoteFactory
 from posts.tests.factories import PostFactory
 from users.tests.factories import UserPublicFactory
 
@@ -108,7 +108,7 @@ class TestCommentViewSet:
 
     def test_cannot_edit_comment_with_ratings(self, authed_api_client):
         comment = CommentFactory(post=self.post)
-        VoteFactory(comment=comment)
+        CommentVoteFactory(comment=comment)
         result = self._edit_comment(
             authed_api_client(comment.user), comment, data={"content": "edited comment"}
         )

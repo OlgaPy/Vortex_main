@@ -10,7 +10,7 @@ class CommentFilter(filters.FilterSet):
 
     def __init__(self, data=None, *args, **kwargs):
         method = getattr(kwargs.get("request"), "method", None)
-        if method in ("PATCH", "DELETE"):
+        if method in ("PATCH", "DELETE", "POST"):
             return super().__init__(data, *args, **kwargs)
         if data is not None:
             data = data.copy()

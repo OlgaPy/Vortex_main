@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from comments.models import Comment
+from comments.models import Comment, CommentVote
 from comments.selectors import get_children_comments
 from posts.models import Post
 from users.api.serializers import UserPublicMinimalSerializer
@@ -87,4 +87,30 @@ class CommentUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "uuid",
             "author",
+        )
+
+
+class CommentVoteCreateSerializer(serializers.ModelSerializer):
+    """Serializer validating data submitted to cast a vote on a comment."""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = CommentVote
+        fields = (
+            "user",
+            "value",
+        )
+
+
+class CommentRatingOnlySerializer(serializers.ModelSerializer):
+    """Serializer to return only rating related data."""
+
+    class Meta:
+        model = Comment
+        fields = (
+            "uuid",
+            "votes_up_count",
+            "votes_down_count",
+            "rating",
         )
