@@ -13,7 +13,7 @@ class CommentFactory(DjangoModelFactory):
         model = "comments.Comment"
 
 
-class VoteFactory(DjangoModelFactory):
+class CommentVoteFactory(DjangoModelFactory):
     user = factory.SubFactory("users.tests.factories.UserPublicFactory")
     comment = factory.SubFactory(CommentFactory)
     value = Vote.UPVOTE

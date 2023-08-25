@@ -31,6 +31,11 @@ class CommentAccessPolicy(AccessPolicy):
             principal="*",
             effect="deny",
         ),
+        Statement(
+            action=["vote"],
+            principal="authenticated",
+            effect="allow",
+        ),
     ]
 
     def user_must_be_author(self, request, view, action):
