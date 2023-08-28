@@ -1,7 +1,6 @@
-from django.utils import timezone
 from rest_access_policy import AccessPolicy, Statement
 
-from comments.selectors import get_comment_editable_window_minutes
+from comments.selectors import can_edit_comment
 
 
 class CommentAccessPolicy(AccessPolicy):
@@ -22,8 +21,7 @@ class CommentAccessPolicy(AccessPolicy):
             effect="allow",
             condition=[
                 "user_must_be_author",
-                "should_not_have_ratings",
-                "should_be_posted_not_before",
+                "should_be_allowed_to_edit",
             ],
         ),
         Statement(
@@ -42,13 +40,5 @@ class CommentAccessPolicy(AccessPolicy):
         comment = view.get_object()
         return comment.user == request.user
 
-    def should_not_have_ratings(self, request, view, action):
-        comment = view.get_object()
-        return not comment.votes.exists()
-
-    def should_be_posted_not_before(self, request, view, action):
-        comment = view.get_object()
-        now = timezone.now()
-        return (
-            now - comment.created_at
-        ).total_seconds() <= get_comment_editable_window_minutes() * 60
+    def should_be_allowed_to_edit(self, request, view, action):
+        return can_edit_comment(request.user, view.get_object())

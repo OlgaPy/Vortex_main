@@ -12,6 +12,7 @@ from comments.api.serializers import (
     CommentUpdateSerializer,
     CommentVoteCreateSerializer,
 )
+from comments.exceptions import CommentEditException
 from comments.filters import CommentFilter
 from comments.models import Comment
 from comments.selectors import get_comments_root_nodes_qs, get_user_default_comments_level
@@ -67,6 +68,14 @@ class CommentViewSet(
         super().perform_create(serializer)
         update_author_comments_count(serializer.instance)
         update_post_comments_count(serializer.instance)
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        if instance.votes.exists():
+            raise CommentEditException(
+                "Нельзя редактировать т.к. за этот комментарий уже проголосовали"
+            )
+        serializer.save()
 
     @action(
         methods=["POST"],

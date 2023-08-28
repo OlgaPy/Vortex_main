@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from posts.choices import PostStatus
 from posts.models import Post, PostVote
@@ -59,3 +60,14 @@ def get_post_editable_window_minutes() -> int:
 def get_post_vote_value_for_author(author: UserPublic, post_vote: PostVote) -> float:
     """Get value of how much rating post author should get on a single post vote."""
     return post_vote.value * settings.POST_RATING_MULTIPLIER
+
+
+def can_edit_post(user: UserPublic, post: Post) -> bool:
+    if user and user != post.user:
+        return False
+    if post.status != PostStatus.PUBLISHED or not post.published_at:
+        return True
+    now = timezone.now()
+    return (
+        now - post.published_at
+    ).total_seconds() <= get_post_editable_window_minutes() * 60

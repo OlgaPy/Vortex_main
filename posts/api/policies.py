@@ -1,9 +1,6 @@
-from django.utils import timezone
 from rest_access_policy import AccessPolicy, Statement
 
-from posts.choices import PostStatus
-from posts.models import Post
-from posts.selectors import get_post_editable_window_minutes
+from posts.selectors import can_edit_post
 
 
 class OwnPostAccessPolicy(AccessPolicy):
@@ -25,7 +22,7 @@ class OwnPostAccessPolicy(AccessPolicy):
             effect="allow",
             condition=[
                 "user_must_be_author",
-                "should_be_posted_not_before",
+                "should_be_allowed_to_edit",
             ],
         ),
     ]
@@ -34,13 +31,5 @@ class OwnPostAccessPolicy(AccessPolicy):
         entity = view.get_object()
         return entity.user == request.user
 
-    def should_be_posted_not_before(self, request, view, action):
-        entity: Post = view.get_object()
-        if entity.status != PostStatus.PUBLISHED:
-            return True
-        if not entity.published_at:
-            return True
-        now = timezone.now()
-        return (
-            now - entity.published_at
-        ).total_seconds() <= get_post_editable_window_minutes() * 60
+    def should_be_allowed_to_edit(self, request, view, action):
+        return can_edit_post(request.user, view.get_object())

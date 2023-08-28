@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from common.api.fields import WritableSlugRelatedField
 from posts.models import Post, PostVote, Tag
+from posts.selectors import can_edit_post
 from users.api.serializers import UserPublicMinimalSerializer
 
 
@@ -10,6 +11,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     author = UserPublicMinimalSerializer(source="user")
     tags = serializers.SlugRelatedField("name", many=True, read_only=True)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -29,7 +31,13 @@ class PostSerializer(serializers.ModelSerializer):
             "rating",
             "status",
             "published_at",
+            "can_edit",
         )
+
+    def get_can_edit(self, obj: Post):
+        request = self.context.get("request")
+        user = request and request.user
+        return can_edit_post(user, obj)
 
 
 class PostRatingOnlySerializer(serializers.ModelSerializer):
