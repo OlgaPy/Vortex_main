@@ -14,6 +14,11 @@ SECRET_KEY = env.str(
 DEBUG = env.bool("DEBUG", default=False)
 ENVIRONMENT = env.bool("ENVIRONMENT", default="local")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", str, ["*"])
+CSRF_COOKIE_DOMAIN = env.str("CSRF_COOKIE_DOMAIN", default=None)
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in env.str("CSRF_TRUSTED_ORIGINS", default="").split(",")]
+USE_SECURE_PROXY_SSL_HEADER = env.bool("USE_SECURE_PROXY_SSL_HEADER", default=False)
+if USE_SECURE_PROXY_SSL_HEADER:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 DJANGO_APPS = [
     "django.contrib.auth",
