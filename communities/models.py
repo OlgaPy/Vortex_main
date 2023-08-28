@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 from django_extensions.db.fields import AutoSlugField
 
@@ -21,7 +20,7 @@ class Community(Timestamped):
     )
     description = models.TextField(blank=True)
     owner = models.ForeignKey(
-        get_user_model(),
+        "users.UserPublic",
         on_delete=models.SET_NULL,
         null=True,
         related_name="owned_communities",

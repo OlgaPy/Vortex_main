@@ -1,7 +1,7 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import UniqueConstraint
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
@@ -18,7 +18,9 @@ class Comment(MPTTModel, Timestamped):
     parent = TreeForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
     )
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        "users.UserPublic", on_delete=models.CASCADE, related_name="comments"
+    )
     post = models.ForeignKey(
         "posts.Post", on_delete=models.CASCADE, related_name="comments"
     )
@@ -39,12 +41,14 @@ class CommentVote(Timestamped):
     """Model to store comment votes."""
 
     user = models.ForeignKey(
-        get_user_model(), related_name="comment_votes", on_delete=models.CASCADE
+        "users.UserPublic", related_name="comment_votes", on_delete=models.CASCADE
     )
     comment = models.ForeignKey(
         "comments.Comment", related_name="votes", on_delete=models.CASCADE
     )
-    value = models.IntegerField(choices=Vote.choices)
+    value = models.SmallIntegerField(choices=Vote.choices)
 
     class Meta:
-        unique_together = ("user", "comment")
+        constraints = [
+            UniqueConstraint(fields=("user", "comment"), name="user_comment_vote"),
+        ]

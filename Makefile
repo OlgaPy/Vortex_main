@@ -1,10 +1,10 @@
 .PHONY: makemigrations migrate build shell bash test run-for-loadtest run
 
 migrations:
-	docker-compose exec kapibara-monolith ./manage.py makemigrations
+	docker-compose run kapibara-monolith ./manage.py makemigrations
 
 migrate:
-	docker-compose exec kapibara-monolith ./manage.py migrate
+	docker-compose run kapibara-monolith ./manage.py migrate
 
 build:
 	docker-compose build --no-cache

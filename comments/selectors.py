@@ -1,7 +1,7 @@
 from django.conf import settings
 from mptt.querysets import TreeQuerySet
 
-from comments.models import Comment
+from comments.models import Comment, CommentVote
 from users.models import UserPublic
 
 
@@ -29,3 +29,10 @@ def get_comments_root_nodes_qs() -> TreeQuerySet[Comment]:
 def get_comment_editable_window_minutes() -> int:
     """Return for how many minutes since posting comment can be edited."""
     return settings.COMMENTS_EDITABLE_WINDOW_MINUTES
+
+
+def get_comment_vote_value_for_author(
+    author: UserPublic, comment_vote: CommentVote
+) -> float:
+    """Get value of how much rating comment author should get on a single comment vote."""
+    return comment_vote.value * settings.COMMENT_RATING_MULTIPLIER

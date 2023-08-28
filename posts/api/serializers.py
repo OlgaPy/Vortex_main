@@ -28,7 +28,7 @@ class PostSerializer(serializers.ModelSerializer):
             "votes_down_count",
             "rating",
             "status",
-            "created_at",
+            "published_at",
         )
 
 
