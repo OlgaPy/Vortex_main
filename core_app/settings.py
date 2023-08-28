@@ -20,6 +20,7 @@ USE_SECURE_PROXY_SSL_HEADER = env.bool("USE_SECURE_PROXY_SSL_HEADER", default=Fa
 if USE_SECURE_PROXY_SSL_HEADER:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+
 DJANGO_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
