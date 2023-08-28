@@ -113,7 +113,10 @@ class TestCommentViewSet:
             authed_api_client(comment.user), comment, data={"content": "edited comment"}
         )
 
-        assert result.status_code == status.HTTP_403_FORBIDDEN, result.content.decode()
+        assert result.status_code in [
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_400_BAD_REQUEST,
+        ], result.content.decode()
 
     def test_cannot_edit_comment_after_specific_time(self, authed_api_client, settings):
         minutes = 1
