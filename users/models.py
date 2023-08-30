@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
@@ -61,7 +60,7 @@ class UserTag(Timestamped):
     """List of tags which user either subscribed or ignored."""
 
     tag = models.ForeignKey("posts.Tag", on_delete=models.CASCADE)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
     status = models.CharField(choices=TagStatus.choices, default=TagStatus.SUBSCRIBED)
 
 
@@ -69,7 +68,7 @@ class UserCommunity(Timestamped):
     """Communities user subscribed to or joined."""
 
     community = models.ForeignKey("communities.Community", on_delete=models.CASCADE)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
     status = models.CharField(
         choices=UserCommunityStatus.choices, default=UserCommunityStatus.SUBSCRIBED
     )
@@ -78,9 +77,11 @@ class UserCommunity(Timestamped):
 class UserRelation(Timestamped):
     """Model to keep user relations, including subscriptions and ignored."""
 
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="+")
+    user = models.ForeignKey(
+        "users.UserPublic", on_delete=models.CASCADE, related_name="+"
+    )
     related_user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="+"
+        "users.UserPublic", on_delete=models.CASCADE, related_name="+"
     )
     status = models.CharField(
         choices=UserRelationStatus.choices, default=UserRelationStatus.SUBSCRIBED
@@ -92,10 +93,10 @@ class UserNote(Timestamped):
     """Model to keep user notes about particular user."""
 
     author = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="written_notes"
+        "users.UserPublic", on_delete=models.CASCADE, related_name="written_notes"
     )
     user_about = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="notes_about"
+        "users.UserPublic", on_delete=models.CASCADE, related_name="notes_about"
     )
     note = models.TextField()
 

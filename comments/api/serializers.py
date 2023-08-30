@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from comments.models import Comment, CommentVote
-from comments.selectors import get_children_comments
+from comments.selectors import can_edit_comment, get_children_comments
 from posts.models import Post
 from users.api.serializers import UserPublicMinimalSerializer
 
@@ -12,6 +12,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     author = UserPublicMinimalSerializer(source="user")
     children = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -25,6 +26,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "level",
             "children",
+            "can_edit",
         )
         read_only_fields = fields
 
@@ -34,6 +36,11 @@ class CommentSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context,
         ).data
+
+    def get_can_edit(self, obj: Comment):
+        request = self.context.get("request")
+        user = request and request.user
+        return can_edit_comment(user, obj)
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):

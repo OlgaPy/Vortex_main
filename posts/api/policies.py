@@ -1,19 +1,20 @@
 from rest_access_policy import AccessPolicy, Statement
 
-from comments.selectors import can_edit_comment
+from posts.selectors import can_edit_post
 
 
-class CommentAccessPolicy(AccessPolicy):
+class OwnPostAccessPolicy(AccessPolicy):
     statements = [
         Statement(
-            action=["list", "retrieve"],
-            principal="*",
+            action=["list", "create"],
+            principal="authenticated",
             effect="allow",
         ),
         Statement(
-            action=["create"],
+            action=["retrieve", "destroy", "publish"],
             principal="authenticated",
             effect="allow",
+            condition=["user_must_be_author"],
         ),
         Statement(
             action=["update", "partial_update"],
@@ -24,21 +25,11 @@ class CommentAccessPolicy(AccessPolicy):
                 "should_be_allowed_to_edit",
             ],
         ),
-        Statement(
-            action=["delete"],
-            principal="*",
-            effect="deny",
-        ),
-        Statement(
-            action=["vote"],
-            principal="authenticated",
-            effect="allow",
-        ),
     ]
 
     def user_must_be_author(self, request, view, action):
-        comment = view.get_object()
-        return comment.user == request.user
+        entity = view.get_object()
+        return entity.user == request.user
 
     def should_be_allowed_to_edit(self, request, view, action):
-        return can_edit_comment(request.user, view.get_object())
+        return can_edit_post(request.user, view.get_object())
