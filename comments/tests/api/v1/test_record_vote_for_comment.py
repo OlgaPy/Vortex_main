@@ -4,7 +4,7 @@ from rest_framework.reverse import reverse
 
 from comments.choices import Vote
 from comments.services import get_comment_vote_value_for_author
-from comments.tests.factories import CommentFactory, CommentVoteFactory
+from comments.tests.factories import CommentFactory
 from users.tests.factories import UserPublicFactory
 
 
@@ -77,26 +77,14 @@ class TestRecordVoteForComment:
     def test_voting_for_own_comment(self, authed_api_client, vote_value):
         client = authed_api_client(self.comment.user)
         result = self._vote_for_comment(client, self.comment, vote_value)
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.status_code == status.HTTP_201_CREATED
 
-    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
-    def test_double_vote(self, authed_api_client, vote_value):
-        CommentVoteFactory(comment=self.comment, user=self.comment.user, value=vote_value)
-        client = authed_api_client(self.comment.user)
-        result = self._vote_for_comment(client, self.comment, vote_value)
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
-
-    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
-    def test_undo_vote(self, authed_api_client, vote_value):
-        undo_value_mapping = {
-            Vote.UPVOTE: Vote.DOWNVOTE,
-            Vote.DOWNVOTE: Vote.UPVOTE,
-        }
+    @pytest.mark.parametrize("second_vote", (Vote.UPVOTE, Vote.DOWNVOTE))
+    @pytest.mark.parametrize("first_vote", (Vote.UPVOTE, Vote.DOWNVOTE))
+    def test_undo_vote(self, authed_api_client, first_vote, second_vote):
         client = authed_api_client(self.voter)
-        self._vote_for_comment(client, self.comment, vote_value)
-        result = self._vote_for_comment(
-            client, self.comment, undo_value_mapping[vote_value]
-        )
+        self._vote_for_comment(client, self.comment, first_vote)
+        result = self._vote_for_comment(client, self.comment, second_vote)
         assert result.status_code == status.HTTP_201_CREATED, result.content.decode()
 
         assert result.data == {

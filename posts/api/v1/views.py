@@ -1,3 +1,4 @@
+from rest_access_policy import AccessViewSetMixin
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from posts.api.permissions import Poster, PostVoter
+from posts.api.policies import OwnPostAccessPolicy
 from posts.api.serializers import (
     PostCreateSerializer,
     PostRatingOnlySerializer,
@@ -16,11 +18,11 @@ from posts.selectors import fetch_new_posts, fetch_user_posts
 from posts.services import delete_post, publish_post, record_vote_for_post
 
 
-class MyPostsViewSet(ModelViewSet):
+class MyPostsViewSet(AccessViewSetMixin, ModelViewSet):
     """API view to return all posts of the user and to allow to manage them."""
 
     serializer_class = PostSerializer
-    permission_classes = (IsAuthenticated & Poster,)
+    access_policy = OwnPostAccessPolicy
     lookup_field = "uuid"
     http_method_names = ["post", "get", "patch", "delete"]
 

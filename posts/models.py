@@ -1,6 +1,5 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import UniqueConstraint
 from django_extensions.db.fields import AutoSlugField
@@ -22,7 +21,7 @@ class PostGroup(Timestamped):
         db_index=True,
     )
     user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="post_groups"
+        "users.UserPublic", on_delete=models.CASCADE, related_name="post_groups"
     )
 
     def __str__(self):
@@ -35,15 +34,22 @@ class Post(Timestamped):
     uuid = models.UUIDField(
         default=uuid.uuid4, unique=True, db_index=True, editable=False
     )
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        "users.UserPublic", on_delete=models.CASCADE, related_name="posts"
+    )
     post_group = models.ForeignKey(
-        "posts.PostGroup", on_delete=models.SET_NULL, null=True, blank=True
+        "posts.PostGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posts",
     )
     community = models.ForeignKey(
         "communities.Community",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name="posts",
     )
     title = models.CharField(max_length=200)
     slug = AutoSlugField(
@@ -76,10 +82,7 @@ class Post(Timestamped):
     status = models.CharField(
         max_length=9, choices=PostStatus.choices, default=PostStatus.DRAFT
     )
-    publish_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        default_related_name = "posts"
+    published_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"<{self.pk}: {self.title}>"
@@ -97,7 +100,7 @@ class Tag(models.Model):
 class PostVote(Timestamped):
     """Model to store post votes."""
 
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey("users.UserPublic", on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     value = models.SmallIntegerField(choices=Vote.choices)
 

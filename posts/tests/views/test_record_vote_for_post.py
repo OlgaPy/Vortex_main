@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from posts.choices import PostStatus, Vote
-from posts.tests.factories import PostFactory, PostVoteFactory
+from posts.tests.factories import PostFactory
 from users.tests.factories import UserPublicFactory
 
 
@@ -75,24 +75,14 @@ class TestRecordVoteForPost:
     def test_voting_for_own_post(self, authed_api_client, vote_value):
         client = authed_api_client(self.post.user)
         result = self._vote_for_post(client, self.post, vote_value)
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.status_code == status.HTTP_201_CREATED
 
-    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
-    def test_double_vote(self, authed_api_client, vote_value):
-        PostVoteFactory(post=self.post, user=self.post.user, value=vote_value)
-        client = authed_api_client(self.post.user)
-        result = self._vote_for_post(client, self.post, vote_value)
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
-
-    @pytest.mark.parametrize("vote_value", (Vote.UPVOTE, Vote.DOWNVOTE))
-    def test_undo_vote(self, authed_api_client, vote_value):
-        undo_value_mapping = {
-            Vote.UPVOTE: Vote.DOWNVOTE,
-            Vote.DOWNVOTE: Vote.UPVOTE,
-        }
+    @pytest.mark.parametrize("second_vote", (Vote.UPVOTE, Vote.DOWNVOTE))
+    @pytest.mark.parametrize("first_vote", (Vote.UPVOTE, Vote.DOWNVOTE))
+    def test_undo_vote(self, authed_api_client, first_vote, second_vote):
         client = authed_api_client(self.voter)
-        self._vote_for_post(client, self.post, vote_value)
-        result = self._vote_for_post(client, self.post, undo_value_mapping[vote_value])
+        self._vote_for_post(client, self.post, first_vote)
+        result = self._vote_for_post(client, self.post, second_vote)
 
         assert result.data == {
             "slug": self.post.slug,
