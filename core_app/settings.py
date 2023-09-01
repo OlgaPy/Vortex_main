@@ -12,7 +12,7 @@ SECRET_KEY = env.str(
 )
 
 DEBUG = env.bool("DEBUG", default=False)
-ENVIRONMENT = env.bool("ENVIRONMENT", default="local")
+ENVIRONMENT = env.str("ENVIRONMENT", default="local")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", str, ["*"])
 CSRF_COOKIE_DOMAIN = env.str("CSRF_COOKIE_DOMAIN", default=None)
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", cast=str, default=[])
@@ -207,3 +207,21 @@ if USE_CLOUD_STORAGE := env.bool("USE_CLOUD_STORAGE", False):
     GS_DEFAULT_ACL = "publicRead"
     GS_QUERYSTRING_AUTH = False
     GS_FILE_OVERWRITE = False
+
+if SENTRY_DSN := env.str("SENTRY_DSN", ""):
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        send_default_pii=True,
+        environment=ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+            ),
+        ],
+    )
