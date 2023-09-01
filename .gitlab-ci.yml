@@ -15,6 +15,9 @@ tests:
     - postgres:15.3
   script:
     - pytest --cov --cov-report term --cov-report xml:coverage.xml --junit-xml=report.xml
+    - curl -Os https://codecov.larikov.dev/uploader/alpine/codecov
+    - chmod +x codecov
+    - ./codecov -u https://codecov.larikov.dev
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     when: always
@@ -27,7 +30,7 @@ tests:
 linters:
   stage: tests & linters
   script:
-    - apt update && apt install git -y
+    - apt update && apt install git curl -y
     - pre-commit run -a
 
 variables:
