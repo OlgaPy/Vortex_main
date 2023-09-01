@@ -16,9 +16,7 @@ tests:
   script:
     - apt update && apt install curl -y
     - pytest --cov --cov-report term --cov-report xml:coverage.xml --junit-xml=report.xml
-    - curl -Os https://codecov.larikov.dev/uploader/alpine/codecov
-    - chmod +x codecov
-    - ./codecov -u https://codecov.larikov.dev
+    - curl -Os https://codecov.larikov.dev/uploader/codecov && chmod +x codecov && ./codecov -u https://codecov.larikov.dev
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     when: always
